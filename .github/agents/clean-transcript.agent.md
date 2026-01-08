@@ -8,114 +8,114 @@ infer: true
 
 # Clean Transcript Agent
 
-## Objectif
-Automatiser le nettoyage et la mise en forme des fichiers transcript bruts en documents markdown structurés et lisibles, adaptés à n'importe quel projet.
+## Objective
+Automate the cleaning and formatting of raw transcript files into structured, readable markdown documents, adaptable to any project.
 
 ## Configuration
-Cet agent lit automatiquement la configuration depuis `.github/prompts.config`:
-- **SOURCE_PATHS**: Emplacements des fichiers bruts à traiter
-- **OUTPUT_PATH**: Destination des fichiers nettoyés (remplacé par `/transcripts/clean/`)
-- **DOMAINS**: Liste des domaines couverts
-- **LANGUAGE**: Langue des documents
-- **PROJECT_NAME**: Nom du projet pour contexte
+This agent automatically reads configuration from `.github/prompts.config`:
+- **SOURCE_PATHS**: Locations of raw files to process
+- **OUTPUT_PATH**: Destination for cleaned files (replaced by `/transcripts/clean/`)
+- **DOMAINS**: List of covered domains
+- **LANGUAGE**: Language of documents
+- **PROJECT_NAME**: Project name for context
 
-## Processus
+## Process
 
-### 1. Découverte des fichiers sources
-- Lire `.github/prompts.config` pour obtenir les chemins source
-- Scanner récursivement chaque chemin source
-- Identifier tous les fichiers `*.transcript`
-- Respecter la hiérarchie des dossiers existants
-- Mapper chaque domaine de `SOURCE_PATHS` vers un dossier de destination dans `/transcripts/clean/`
+### 1. Source File Discovery
+- Read `.github/prompts.config` to obtain source paths
+- Recursively scan each source path
+- Identify all `*.transcript` files
+- Respect existing folder hierarchy
+- Map each domain from `SOURCE_PATHS` to a destination folder in `/transcripts/clean/`
 
-### 2. Gestion des fichiers volumineux
-Les fichiers transcript peuvent contenir plusieurs milliers de lignes:
-- [ ] **Traitement fichier par fichier**: Analyser d'abord la taille et la complexité du contenu
-- [ ] **Découpage en parties si nécessaire**: Si le contexte dépasse les limites de traitement
-  - Diviser logiquement par thèmes majeurs
-  - Traiter chaque partie séparément
-  - Documenter les points de coupure
-- [ ] **Passe globale de consolidation**: Après traitement des parties
-  - Fusionner les contenus de manière cohérente
-  - Éliminer les redondances inter-parties
-  - Assurer la continuité logique et la traçabilité
+### 2. Large File Handling
+Transcript files may contain several thousand lines:
+- [ ] **File-by-file processing**: First analyze content size and complexity
+- [ ] **Splitting into parts if necessary**: If context exceeds processing limits
+  - Divide logically by major themes
+  - Process each part separately
+  - Document cut-off points
+- [ ] **Global consolidation pass**: After processing parts
+  - Merge content coherently
+  - Eliminate inter-part redundancies
+  - Ensure logical continuity and traceability
 
-### 3. Nettoyage du contenu
-Pour chaque fichier (ou partie de fichier) transcript:
+### 3. Content Cleaning
+For each transcript file (or file part):
 
-**Nettoyage textuel**:
-- [ ] Corriger les balises mal formées ou caractères corrompus
-- [ ] Normaliser les espaces multiples en espaces simples
-- [ ] Nettoyer les répétitions excessives de mots
-- [ ] Corriger les petites fautes de syntaxe évidentes tout en gardant le ton conversationnel
-- [ ] Supprimer les interjections excessives ("hum", "euh", "bah", etc.)
+**Text Cleaning**:
+- [ ] Fix malformed tags or corrupted characters
+- [ ] Normalize multiple spaces to single spaces
+- [ ] Clean excessive word repetitions
+- [ ] Correct obvious syntax errors while maintaining conversational tone
+- [ ] Remove excessive interjections ("uh", "um", "err", etc.)
 
-**Structuration**:
-- [ ] Identifier les sujets principaux et thèmes couverts
-- [ ] Détecter les transitions naturelles entre sujets
-- [ ] Créer une table des matières basée sur ces thèmes
+**Structuring**:
+- [ ] Identify main topics and covered themes
+- [ ] Detect natural transitions between topics
+- [ ] Create table of contents based on these themes
 
-**Formatage Markdown**:
-- [ ] Ajouter un en-tête avec titre, domaine et date si disponible
-- [ ] Créer des sections par thème majeur
-- [ ] Formater les concepts techniques en gras ou code
-- [ ] Ajouter des puces pour les énumérations
-- [ ] Indenter les citations ou explications importantes
+**Markdown Formatting**:
+- [ ] Add header with title, domain, and date if available
+- [ ] Create sections by major theme
+- [ ] Format technical concepts in bold or code
+- [ ] Add bullets for enumerations
+- [ ] Indent quotes or important explanations
 
-### 3. Structure du fichier markdown final
+### 3. Final Markdown File Structure
 
 ```markdown
-# Titre: [Nom du KT]
+# Title: [Name of KT]
 
-**Domaine**: [Domaine selon DOMAINS]  
-**Type**: Formation / Knowledge Transfer  
-**Langue**: [LANGUAGE]  
-**Durée estimée**: [À estimer du contenu]
+**Domain**: [Domain according to DOMAINS]  
+**Type**: Training / Knowledge Transfer  
+**Language**: [LANGUAGE]  
+**Estimated Duration**: [To estimate from content]
 
-## Résumé
-[Synthèse en 2-3 lignes des sujets principaux]
+## Summary
+[Synthesis in 2-3 lines of main topics]
 
-## Sujets abordés
-- Sujet 1
-- Sujet 2
+## Topics Covered
+- Topic 1
+- Topic 2
 - etc.
 
-## Contenu
+## Content
 
-### [Thème 1]
-[Contenu structuré et nettoyé]
+### [Theme 1]
+[Structured and cleaned content]
 
-### [Thème 2]
-[Contenu structuré et nettoyé]
+### [Theme 2]
+[Structured and cleaned content]
 
-### Concepts clés
-- **Concept 1**: Définition
-- **Concept 2**: Définition
+### Key Concepts
+- **Concept 1**: Definition
+- **Concept 2**: Definition
 
-## Notes supplémentaires
-[Infos additionnelles pertinentes]
+## Additional Notes
+[Relevant additional information]
 ```
 
-### 5. Exécution
+### 5. Execution
 
-**Lecture de la configuration**:
-1. Lire `.github/prompts.config`
-2. Extraire `SOURCE_PATHS` (liste des chemins source)
-3. Extraire `DOMAINS` (liste des domaines)
-4. Extraire `LANGUAGE` (pour les métadonnées)
+**Configuration Reading**:
+1. Read `.github/prompts.config`
+2. Extract `SOURCE_PATHS` (list of source paths)
+3. Extract `DOMAINS` (list of domains)
+4. Extract `LANGUAGE` (for metadata)
 
-**Pour chaque fichier transcript**:
-1. Lire le contenu brut
-2. Analyser et segmenter par thèmes
-3. Appliquer les nettoyages
-4. Structurer en markdown
-5. Déterminer le dossier de sortie basé sur la hiérarchie source
-6. Créer le dossier `/transcripts/clean/[chemin-relatif]/` s'il n'existe pas
-7. Sauvegarder le fichier `.md` avec le même nom que le transcript
+**For each transcript file**:
+1. Read raw content
+2. Analyze and segment by themes
+3. Apply cleaning
+4. Structure into markdown
+5. Determine output folder based on source hierarchy
+6. Create `/transcripts/clean/[relative-path]/` folder if it doesn't exist
+7. Save `.md` file with same name as transcript
 
-**Exemple avec configuration**:
+**Example with configuration**:
 ```yaml
-# Dans prompts.config
+# In prompts.config
 SOURCE_PATHS:
   - /transcripts/raw/domain1
   - /transcripts/raw/domain2
@@ -125,53 +125,53 @@ SOURCE_PATHS:
 - Input: `/transcripts/raw/domain2/KT_5.transcript` → Output: `/transcripts/clean/domain2/KT_5.md`
 
 ### 6. Validation
-- [ ] Vérifier que tous les fichiers source ont un équivalent en sortie
-- [ ] Vérifier la cohérence de la structure markdown
-- [ ] Contrôler qu'aucune information n'a été perdue (juste réorganisée)
-- [ ] S'assurer que la hiérarchie des dossiers est respectée
-- [ ] Confirmer que tous les domaines de `DOMAINS` sont couverts
+- [ ] Verify that all source files have an equivalent output
+- [ ] Verify markdown structure consistency
+- [ ] Check that no information was lost (just reorganized)
+- [ ] Ensure folder hierarchy is respected
+- [ ] Confirm that all domains from `DOMAINS` are covered
 
-## Commandes d'exécution
+## Execution Commands
 
-### Traiter un fichier individuel
+### Process individual file
 ```
-Process file: /transcripts/raw/[chemin]/[KT_X.transcript]
+Process file: /transcripts/raw/[path]/[KT_X.transcript]
 ```
 
-### Traiter un domaine entier
+### Process entire domain
 ```
 Process domain: [domain-name-from-config]
 ```
 
-### Traiter tous les transcripts (utilise prompts.config)
+### Process all transcripts (uses prompts.config)
 ```
 Process all transcripts
 ```
 
-## Critères de qualité
-✓ Contenu nettoyé et lisible
-✓ Hiérarchie logique respectée
-✓ Architecture de dossiers préservée
-✓ Noms de fichiers cohérents
-✓ Markdown bien formaté
-✓ Aucune perte d'information
-✓ **Réutilisabilité**: Contenu structuré pour intégration en base de connaissance
-✓ **Cohérence**: Terminologie uniforme au sein du projet
-✓ **Traçabilité**: Identifiabilité de la source pour chaque document
+## Quality Criteria
+✓ Cleaned and readable content
+✓ Logical hierarchy respected
+✓ Folder architecture preserved
+✓ Consistent file names
+✓ Well-formatted markdown
+✓ No information loss
+✓ **Reusability**: Content structured for knowledge base integration
+✓ **Consistency**: Uniform terminology within project
+✓ **Traceability**: Source identifiability for each document
 
-## Considérations pour la base de connaissance
-Les documents générés doivent être:
-- **Autonomes**: Compréhensibles indépendamment du fichier source
-- **Indexables**: Structure claire pour recherche et navigation
-- **Croisables**: Références entre concepts du projet
-- **Maintenables**: Format facilement mise à jour et extensible
-- **Navigables**: Table des matières hiérarchisée et hyperliens internes
+## Knowledge Base Considerations
+Generated documents must be:
+- **Self-contained**: Understandable independently from source file
+- **Indexable**: Clear structure for search and navigation
+- **Cross-referenced**: References between project concepts
+- **Maintainable**: Format easily updated and extensible
+- **Navigable**: Hierarchical table of contents and internal hyperlinks
 
-## Adaptation au projet
-Cet agent s'adapte automatiquement à n'importe quel projet grâce à `.github/prompts.config`:
-- Les domaines sont définis dynamiquement
-- Les chemins de source et destination sont configurables
-- La langue est adaptée selon les paramètres
-- Le contexte métier est spécifique au projet
+## Project Adaptation
+This agent automatically adapts to any project through `.github/prompts.config`:
+- Domains are defined dynamically
+- Source and destination paths are configurable
+- Language is adapted according to parameters
+- Business context is project-specific
 
-**Aucune modification du agent requise pour changer de projet!**
+**No agent modification required to change projects!**

@@ -1,93 +1,93 @@
 # Transcript to Documentation System
 
-Système automatisé de transformation de transcripts en documentation structurée et interrogeable.
+Automated system for transforming transcripts into structured and queryable documentation.
 
 ## 📖 Introduction
 
-Ce projet fournit une **suite complète d'outils et agents** pour transformer des transcripts bruts (enregistrements de réunions, entretiens de transfert de connaissances, etc.) en **documentation structurée, navigable et interrogeable**.
+This project provides a **complete suite of tools and agents** to transform raw transcripts (meeting recordings, knowledge transfer interviews, etc.) into **structured, navigable and queryable documentation**.
 
-La documentation générée peut être recherchée et interrogée via l'**agent de recherche intégré** (`search-doc`), permettant un accès rapide et précis aux informations documentées.
+Generated documentation can be searched and queried via the **integrated search agent** (`search-doc`), allowing quick and precise access to documented information.
 
-### Pourquoi c'est important
+### Why It Matters
 
-- 📝 **Capture de connaissances** : Transforme des transcripts verbaux en documentation écrite
-- 🔍 **Accessibilité** : Rend l'information facilement accessible via recherche intelligente
-- 📊 **Structuration** : Organise l'information de manière cohérente et logique
-- 🔄 **Réutilisabilité** : Documentation générique utilisable sur n'importe quel projet
-- 🤖 **Automatisation** : Utilise GitHub Copilot pour accélérer le processus
+- 📝 **Knowledge Capture**: Transforms verbal transcripts into written documentation
+- 🔍 **Accessibility**: Makes information easily accessible via intelligent search
+- 📊 **Structuring**: Organizes information in a coherent and logical manner
+- 🔄 **Reusability**: Generic documentation usable on any project
+- 🤖 **Automation**: Uses GitHub Copilot to accelerate the process
 
 ---
 
-## 🔧 Prérequis
+## 🔧 Requirements
 
-### Outils requis
+### Required Tools
 
-- **GitHub Copilot Chat** - Assistant IA pour exécuter les agents
-- **Visual Studio Code** - Éditeur de code avec support Copilot Chat
-- **Dossier de projet** - Structure préparée avec les dossiers nécessaires
+- **GitHub Copilot Chat** - AI assistant for executing agents
+- **Visual Studio Code** - Code editor with Copilot Chat support
+- **Project Folder** - Structure prepared with necessary folders
 
-### Versions recommandées
+### Recommended Versions
 
-- VS Code: Version récente (2024+)
-- GitHub Copilot: Accès activé
+- VS Code: Recent version (2024+)
+- GitHub Copilot: Access enabled
 
-### Compétences requises
+### Required Skills
 
-- Comprendre les bases de Git/GitHub
-- Familiarité avec VS Code
-- Capacité à suivre des instructions étape par étape
+- Understand Git/GitHub basics
+- Familiarity with VS Code
+- Ability to follow step-by-step instructions
 
 ---
 
 ## 📦 Installation
 
-### Étape 1: Cloner/Créer le dépôt
+### Step 1: Clone/Create Repository
 
 ```bash
-# Option 1: Cloner le dépôt existant
+# Option 1: Clone existing repository
 git clone <repository-url>
 cd <repository-name>
 
-# Option 2: Créer la structure à partir de zéro
+# Option 2: Create structure from scratch
 mkdir -p .github/{agents,prompts,instructions}
 mkdir -p transcripts/{raw,clean}
 mkdir -p docs
 mkdir -p temp
 ```
 
-### Étape 2: Vérifier la structure des fichiers
+### Step 2: Verify File Structure
 
-Assurez-vous que les fichiers suivants existent dans votre projet:
+Ensure following files exist in your project:
 
-**Fichiers obligatoires**:
+**Required Files**:
 
 ```
 .github/
 ├── agents/
-│   ├── clean-transcript.agent.md               ← Agent de nettoyage
-│   └── search-doc.agent.md                     ← Agent de recherche
+│   ├── clean-transcript.agent.md               ← Cleaning agent
+│   └── search-doc.agent.md                     ← Search agent
 ├── prompts/
-│   ├── generic-doc-transformation-agent.prompt.md  ← Générateur d'agent
-│   └── create-prompt.prompt.md                 ← Générateur de prompts
+│   ├── generic-doc-transformation-agent.prompt.md  ← Agent generator
+│   └── create-prompt.prompt.md                 ← Prompt generator
 ├── instructions/
-│   ├── agents.instructions.md                  ← Règles agents
-│   ├── markdown.instructions.md                ← Standards markdown
-│   ├── process.instructions.md                 ← Process global
-│   └── prompt.instructions.md                  ← Standards prompts
-└── prompts.config                              ← Configuration centrale
+│   ├── agents.instructions.md                  ← Agent rules
+│   ├── markdown.instructions.md                ← Markdown standards
+│   ├── process.instructions.md                 ← Global process
+│   └── prompt.instructions.md                  ← Prompt standards
+└── prompts.config                              ← Central configuration
 
 transcripts/
-├── raw/                                         ← Transcripts bruts
-└── clean/                                       ← Transcripts nettoyés
+├── raw/                                         ← Raw transcripts
+└── clean/                                       ← Cleaned transcripts
 
-docs/                                            ← Documentation générée
+docs/                                            ← Generated documentation
 
-temp/                                            ← Fichiers temporaires
+temp/                                            ← Temporary files
 ```
 
-### Étape 3: Configuration initiale
+### Step 3: Initial Configuration
 
-Éditez le fichier `.github/prompts.config` avec vos paramètres de projet:
+Edit `.github/prompts.config` file with your project parameters:
 
 ```yaml
 PROJECT_NAME: Your Project Name
@@ -96,7 +96,7 @@ SOURCE_PATHS:
   - /transcripts/clean/domain1
   - /transcripts/clean/domain2
 OUTPUT_PATH: /docs
-LANGUAGE: Français
+LANGUAGE: English
 DOMAINS:
   - Domain1
   - Domain2
@@ -105,144 +105,144 @@ BATCH_SIZE: 2-4
 
 ---
 
-## 📁 Description des fichiers et dossiers
+## 📁 File and Folder Description
 
 ### Agents (`.github/agents/`)
 
 #### `clean-transcript.agent.md`
-**Rôle**: Agent de nettoyage et structuration de transcripts
-- Lit les transcripts bruts (`.transcript`)
-- Corrige les erreurs et omissions
-- Structure le contenu en markdown
-- Applique les standards de formatage
-- Produit: Fichiers `.md` structurés dans `/transcripts/clean`
-- **Statut**: Agent prérequis (nécessaire au démarrage)
+**Role**: Transcript cleaning and structuring agent
+- Reads raw transcripts (`.transcript`)
+- Corrects errors and omissions
+- Structures content into markdown
+- Applies formatting standards
+- Output: Structured `.md` files in `/transcripts/clean`
+- **Status**: Required agent (necessary at startup)
 
-#### `create-docs.agent.md` (généré)
-**Rôle**: Agent principal de création de documentation
-- **GÉNÉRÉ DYNAMIQUEMENT** par `generic-doc-transformation-agent.prompt.md`
-- Lit les transcripts nettoyés
-- Les transforme en documentation structurée
-- Organise par domaines et sujets
-- Génère avec métadonnées (Topics, Related, Source)
-- Produit: Documents markdown structurés dans `/docs`
-- **Statut**: Créé pendant le processus (pas un prérequis)
+#### `create-docs.agent.md` (generated)
+**Role**: Main documentation creation agent
+- **DYNAMICALLY GENERATED** by `generic-doc-transformation-agent.prompt.md`
+- Reads cleaned transcripts
+- Transforms them into structured documentation
+- Organizes by domains and topics
+- Generates with metadata (Topics, Related, Source)
+- Output: Structured markdown documents in `/docs`
+- **Status**: Created during process (not a prerequisite)
 
 #### `search-doc.agent.md`
-**Rôle**: Agent de recherche et réponse
-- Interroge la documentation générée
-- Répond uniquement basé sur la documentation
-- Aucune hallucination ou invention
-- Fournit sources et citations
-- Restriction: Aucune exécution de code
-- **Statut**: Agent générique (copy-paste ready)
+**Role**: Search and response agent
+- Queries generated documentation
+- Responds only based on documentation
+- No hallucination or invention
+- Provides sources and citations
+- Restriction: No code execution
+- **Status**: Generic agent (copy-paste ready)
 
 ### Prompts (`.github/prompts/`)
 
 #### `generic-doc-transformation-agent.prompt.md`
-**Rôle**: Générateur d'agent de documentation
-- Produit un agent `create-docs` personnalisé
-- Adapté à votre structure et domaines
-- Remplace le template générique
-- Entrée: Fichiers source + paramètres
-- Sortie: `.github/agents/create-docs.agent.md`
+**Role**: Documentation agent generator
+- Produces custom `create-docs` agent
+- Adapted to your structure and domains
+- Replaces generic template
+- Input: Source files + parameters
+- Output: `.github/agents/create-docs.agent.md`
 
 #### `create-prompt.prompt.md`
-**Rôle**: Générateur de prompts d'exécution
-- Scanne les fichiers source
-- Groupe intelligemment par lots (2-4 fichiers)
-- Génère tous les prompts d'exécution
-- Produit: Prompts pour init + batches + synthèse
-- Automation: Batch detection automatique
+**Role**: Execution prompt generator
+- Scans source files
+- Intelligently groups by batches (2-4 files)
+- Generates all execution prompts
+- Output: Prompts for init + batches + summary
+- Automation: Automatic batch detection
 
 ### Instructions (`.github/instructions/`)
 
 #### `process.instructions.md`
-Processus global et flux de travail:
-- Description complète du système end-to-end
-- Phases et étapes du pipeline
-- Flux de données entre composants
-- Dépendances et ordonnancement
-- Checklists de complétion
+Global process and workflow:
+- Complete end-to-end system description
+- Pipeline phases and steps
+- Data flow between components
+- Dependencies and sequencing
+- Completion checklists
 
 #### `agents.instructions.md`
-Règles de création pour les fichiers `.agent.md`:
-- Structure YAML frontmatter
-- Sections obligatoires
-- Format et conventions
-- Bonnes pratiques
+Creation rules for `.agent.md` files:
+- YAML frontmatter structure
+- Required sections
+- Format and conventions
+- Best practices
 
 #### `markdown.instructions.md`
-Standards de documentation:
-- Formatage markdown cohérent
-- Structure de documents
-- Conventions de nommage
-- Métadonnées requises
+Documentation standards:
+- Consistent markdown formatting
+- Document structure
+- Naming conventions
+- Required metadata
 
 #### `prompt.instructions.md`
-Standards pour fichiers `.prompt.md`:
-- Structure et format
-- Sections d'instruction
+Standards for `.prompt.md` files:
+- Structure and format
+- Instruction sections
 - Best practices
 - Validation
 
 ### Configuration (`.github/prompts.config`)
 
-Fichier YAML centralisé contenant:
-- `PROJECT_NAME`: Nom du projet
-- `SOURCE_PATHS`: Emplacements des transcripts
-- `OUTPUT_PATH`: Où générer la documentation
-- `LANGUAGE`: Langue (ex: Français)
-- `DOMAINS`: Domaines/sujets principaux
-- `BATCH_SIZE`: Fichiers par batch (2-4)
-- `MODEL`: Modèle IA (Claude Sonnet 4.5)
-- `TOOLS`: Outils disponibles (read, search)
+Centralized YAML file containing:
+- `PROJECT_NAME`: Project name
+- `SOURCE_PATHS`: Transcript locations
+- `OUTPUT_PATH`: Where to generate documentation
+- `LANGUAGE`: Language (e.g., English)
+- `DOMAINS`: Main domains/topics
+- `BATCH_SIZE`: Files per batch (2-4)
+- `MODEL`: AI model (Claude Sonnet 4.5)
+- `TOOLS`: Available tools (read, search)
 
-### Dossiers
+### Folders
 
 #### `transcripts/raw/`
-- **Contient**: Fichiers `.transcript` bruts
-- **Source**: Enregistrements/transcriptions originales
-- **Format**: Texte brut ou formaté
-- **Rôle**: Point de départ du processus
+- **Contains**: Raw `.transcript` files
+- **Source**: Original recordings/transcriptions
+- **Format**: Plain text or formatted
+- **Role**: Process starting point
 
 #### `transcripts/clean/`
-- **Contient**: Fichiers `.md` nettoyés
-- **Source**: Transformés depuis les fichiers bruts
-- **Format**: Markdown structuré
-- **Rôle**: Source pour la génération de documentation
+- **Contains**: Cleaned `.md` files
+- **Source**: Transformed from raw files
+- **Format**: Structured markdown
+- **Role**: Source for documentation generation
 
 #### `docs/`
-- **Contient**: Documentation finale générée
-- **Structure**: Organisée par domaines
-- **Format**: Markdown avec métadonnées
-- **Rôle**: Destination de la documentation
+- **Contains**: Final generated documentation
+- **Structure**: Organized by domains
+- **Format**: Markdown with metadata
+- **Role**: Documentation destination
 
 #### `temp/`
-- **Contient**: Fichiers temporaires de progression
-- **Usage**: Suivi des batches pendant traitement
-- **Format**: Fichiers de progression (`agent-progress.md`)
-- **Rôle**: Gestion des opérations longues
+- **Contains**: Progress temporary files
+- **Usage**: Batch tracking during processing
+- **Format**: Progress files (`agent-progress.md`)
+- **Role**: Long operation management
 
 ---
 
-## 🚀 Utilisation
+## 🚀 Usage
 
-### Flux de travail complet
+### Complete Workflow
 
 ```mermaid
 graph LR
-    A["Transcripts Bruts<br/>/transcripts/raw"] -->|"@clean-transcript"| B["Transcripts Nettoyés<br/>/transcripts/clean"]
-    B -->|"@generic-doc-transformation-agent"| C["Agent Créé<br/>create-docs.agent.md"]
-    B -->|"@create-prompt"| D["Prompts Générés<br/>.prompt.md numérotés"]
-    C -->|"exécute avec"| E["Documentation<br/>/docs"]
-    D -->|"alimente"| E
-    E -->|"@search-doc"| F["Réponses"]
+    A["Raw Transcripts<br/>/transcripts/raw"] -->|"@clean-transcript"| B["Cleaned Transcripts<br/>/transcripts/clean"]
+    B -->|"@generic-doc-transformation-agent"| C["Agent Created<br/>create-docs.agent.md"]
+    B -->|"@create-prompt"| D["Generated Prompts<br/>.prompt.md numbered"]
+    C -->|"executes with"| E["Documentation<br/>/docs"]
+    D -->|"feeds"| E
+    E -->|"@search-doc"| F["Answers"]
 ```
 
-### Étape 1: Préparer les transcripts bruts
+### Step 1: Prepare Raw Transcripts
 
-**Action**: Ajouter les transcripts dans `/transcripts/raw/`
+**Action**: Add transcripts to `/transcripts/raw/`
 
 ```
 transcripts/raw/
@@ -251,32 +251,32 @@ transcripts/raw/
 └── KT_3.transcript
 ```
 
-**Format accepté**:
-- `.transcript` files (texte brut)
-- Contenu: Transcriptions textuelles de réunions/entretiens
+**Accepted Format**:
+- `.transcript` files (plain text)
+- Content: Text transcriptions of meetings/interviews
 
-### Étape 2: Nettoyer les transcripts
+### Step 2: Clean Transcripts
 
-**Outil**: Agent de nettoyage `clean-transcript.agent.md`
+**Tool**: Cleaning agent `clean-transcript.agent.md`
 
-**Commande VS Code**:
+**VS Code Command**:
 ```
 @clean-transcript
 Process the transcript "/transcripts/raw/KT_1.transcript"
 ```
 
-**Note**: Sélectionner l'agent **@clean-transcript** dans l'interface Copilot Chat
+**Note**: Select **@clean-transcript** agent in Copilot Chat interface
 
-**Résultat**: Fichiers `.md` nettoyés dans `/transcripts/clean/`
+**Output**: Cleaned `.md` files in `/transcripts/clean/`
 
-**Note**: Plusieurs itérations peuvent être nécessaires
-- Vérifier la qualité
-- Corriger les omissions
-- Affiner la structure
+**Note**: Multiple iterations may be necessary
+- Check quality
+- Correct omissions
+- Refine structure
 
-### Étape 3: Vérifier les transcripts nettoyés
+### Step 3: Verify Cleaned Transcripts
 
-**Action**: Examiner les fichiers dans `/transcripts/clean/`
+**Action**: Examine files in `/transcripts/clean/`
 
 ```
 transcripts/clean/
@@ -288,125 +288,125 @@ transcripts/clean/
     └── KT_2.md
 ```
 
-**Vérifications**:
-- ✅ Contenu correct et complet
-- ✅ Structure logique
-- ✅ Métadonnées présentes
-- ✅ Aucune corruption de fichiers
+**Checks**:
+- ✅ Correct and complete content
+- ✅ Logical structure
+- ✅ Metadata present
+- ✅ No file corruption
 
-### Étape 4: Générer l'agent de documentation
+### Step 4: Generate Documentation Agent
 
-**Outil**: `generic-doc-transformation-agent.prompt.md`
+**Tool**: `generic-doc-transformation-agent.prompt.md`
 
-**Étapes**:
-1. Utiliser directement le prompt dans le chat. (les paramètres sont lus depuis `prompts.config`):
+**Steps**:
+1. Use prompt directly in chat (parameters read from `prompts.config`):
    ```
-   /generic-doc-transformation-agent Créé moi l'agent
+   /generic-doc-transformation-agent Create the agent for me
    ```
-2. Le prompt génère: `.github/agents/create-docs.agent.md`
+2. Prompt generates: `.github/agents/create-docs.agent.md`
 
-**Résultat**:
-- Agent personnalisé basé sur votre structure
-- Adapté à vos domaines
-- Prêt pour exécution
+**Output**:
+- Custom agent based on your structure
+- Adapted to your domains
+- Ready for execution
 
-### Étape 5: Créer les prompts d'exécution
+### Step 5: Create Execution Prompts
 
-**Outil**: `create-prompt.prompt.md`
+**Tool**: `create-prompt.prompt.md`
 
-**Étapes**:
-1. Utiliser le prompt dans le chat:
+**Steps**:
+1. Use prompt in chat:
    ```
-   /create-prompt Génère moi les prompts
+   /create-prompt Generate the prompts for me
    ```
-2. Le prompt auto-détecte:
-   - Nombre de fichiers source
-   - Groupement optimal en lots
-   - Création de tous les prompts
+2. Prompt auto-detects:
+   - Number of source files
+   - Optimal batch grouping
+   - Creation of all prompts
 
-**Résultat**: Fichiers `.prompt.md` numérotés créés dans `.github/prompts/`
-- `01-init-docs.prompt.md` - Initialisation
-- `02-batch-01.prompt.md`, `03-batch-02.prompt.md`, etc. - Batches de traitement
-- `N-cross-references.prompt.md` - Références croisées
-- `N+1-summary.prompt.md` - Synthèse finale
+**Output**: Numbered `.prompt.md` files created in `.github/prompts/`
+- `01-init-docs.prompt.md` - Initialization
+- `02-batch-01.prompt.md`, `03-batch-02.prompt.md`, etc. - Processing batches
+- `N-cross-references.prompt.md` - Cross-references
+- `N+1-summary.prompt.md` - Final summary
 
-### Étape 6: Exécuter les prompts de documentation
+### Step 6: Execute Documentation Prompts
 
-**Outil**: Agent généré `create-docs.agent.md`
+**Tool**: Generated agent `create-docs.agent.md`
 
-**Étapes**:
+**Steps**:
 
-1. **Initialiser** la documentation:
+1. **Initialize** documentation:
    ```
    @create-docs
    /01-init-docs
    ```
 
-2. **Traiter les batches** (un par un ou parallèle):
+2. **Process batches** (one at a time or parallel):
    ```
    @create-docs
    /02-batch-01
    
    @create-docs
-   //03-batch-02
+   /03-batch-02
    ```
 
-3. **Ajouter les références croisées**:
+3. **Add cross-references**:
    ```
    @create-docs
    /N-cross-references
    ```
 
-4. **Générer la synthèse**:
+4. **Generate summary**:
    ```
    @create-docs
    /N+1-summary
    ```
 
-**Résultat**: Documentation complète dans `/docs/`
+**Output**: Complete documentation in `/docs/`
 
-### Étape 7: Interroger la documentation
+### Step 7: Query Documentation
 
-**Outil**: Agent de recherche `search-doc.agent.md`
+**Tool**: Search agent `search-doc.agent.md`
 
-**Utilisation**:
+**Usage**:
 ```
 @search-doc
-"Qu'est-ce que [Concept] ?"
+"What is [Concept]?"
 
 @search-doc
-"Comment faire [Action] ?"
+"How to [Action]?"
 
 @search-doc
-"Quelle est la différence entre [A] et [B] ?"
+"What is the difference between [A] and [B]?"
 ```
 
-**Réponses**:
-- ✅ Basées UNIQUEMENT sur la documentation
-- ✅ Avec citations et sources
-- ✅ Indiquant les limitations
-- ✅ Suggestions de documents connexes
+**Responses**:
+- ✅ Based ONLY on documentation
+- ✅ With citations and sources
+- ✅ Indicating limitations
+- ✅ Suggestions for related documents
 
 ---
 
-## ⚙️ Détail de la configuration
+## ⚙️ Configuration Details
 
-### Fichier: `.github/prompts.config`
+### File: `.github/prompts.config`
 
-Fichier YAML centralisé contenant tous les paramètres de projet.
+Centralized YAML file containing all project parameters.
 
-### Paramètres principaux
+### Main Parameters
 
 ```yaml
 # ========================================
-# INFORMATIONS DU PROJET
+# PROJECT INFORMATION
 # ========================================
 PROJECT_NAME: My Documentation
 AGENT_NAME: create-docs
-AGENT_DESCRIPTION: Agent de transformation de transcripts en documentation
+AGENT_DESCRIPTION: Agent for transforming transcripts to documentation
 
 # ========================================
-# CHEMINS ET SOURCES
+# PATHS AND SOURCES
 # ========================================
 SOURCE_PATHS:
   - /transcripts/clean/1_Domain_1
@@ -414,43 +414,43 @@ SOURCE_PATHS:
 OUTPUT_PATH: /docs
 
 # ========================================
-# STRUCTURE ET DOMAINES
+# STRUCTURE AND DOMAINS
 # ========================================
 DOMAINS:
   - Domain_1
     path: 1_Domain_1
     file_count: X
-    description: Mon super domaine 1
+    description: My awesome domain 1
   - Domain_2
     path: 2_Domain_2
     file_count: X
-    description: Mon super domaine 2
+    description: My awesome domain 2
 
-LANGUAGE: Français
+LANGUAGE: English
 TONE: Professional
 AUDIENCE: Technical teams and documentation users
 
 # ========================================
-# TRAITEMENT PAR LOTS
+# BATCH PROCESSING
 # ========================================
-BATCH_SIZE: 2-4  # Fichiers par batch
+BATCH_SIZE: 2-4  # Files per batch
 PROGRESS_FILE: /temp/[agent-name]-progress.md
 
 # ========================================
-# AGENT ET OUTILS
+# AGENT AND TOOLS
 # ========================================
 TOOLS: [read, edit, search]
 TARGET: vscode
 ```
 
-### Comment modifier la configuration
+### How to Modify Configuration
 
-**Pour changer le chemin de sortie**:
+**To change output path**:
 ```yaml
-OUTPUT_PATH: /documentation  # Au lieu de /docs
+OUTPUT_PATH: /documentation  # Instead of /docs
 ```
 
-**Pour ajouter de nouveaux domaines**:
+**To add new domains**:
 ```yaml
 DOMAINS:
   - Domain1
@@ -458,68 +458,68 @@ DOMAINS:
   - NewDomain
 ```
 
-**Pour changer la langue**:
+**To change language**:
 ```yaml
-LANGUAGE: English  # Au lieu de Français
+LANGUAGE: English  # Instead of French
 ```
 
-**Pour modifier la taille des lots**:
+**To modify batch size**:
 ```yaml
-BATCH_SIZE: 3-5  # Traiter 3-5 fichiers par batch
+BATCH_SIZE: 3-5  # Process 3-5 files per batch
 ```
 
-### Effet des modifications
+### Effect of Modifications
 
-Les agents et prompts lisant depuis `prompts.config` s'adaptent automatiquement:
-- ✅ `generic-doc-transformation-agent.prompt.md` utilise les nuevos paramètres
-- ✅ `create-prompt.prompt.md` ajuste les lots
-- ✅ `create-docs.agent.md` génère selon la nouvelle structure
-- ✅ `search-doc.agent.md` interroge le nouveau `OUTPUT_PATH`
+Agents and prompts reading from `prompts.config` automatically adapt:
+- ✅ `generic-doc-transformation-agent.prompt.md` uses new parameters
+- ✅ `create-prompt.prompt.md` adjusts batches
+- ✅ `create-docs.agent.md` generates according to new structure
+- ✅ `search-doc.agent.md` queries new `OUTPUT_PATH`
 
-**Aucune modification de code requise!**
-
----
-
-## 📋 Résumé du workflow
-
-| Étape | Outil | Action | Output |
-|-------|-------|--------|--------|
-| 1 | Manuel | Ajouter transcripts | `/transcripts/raw/` |
-| 2 | @clean-transcript | Nettoyer transcripts | `/transcripts/clean/` |
-| 3 | Manuel | Vérifier qualité | ✓ Validation |
-| 4 | @generic-doc-transformation-agent | Générer agent | `create-docs.agent.md` |
-| 5 | @create-prompt | Générer prompts | `batch-*.md` |
-| 6 | @create-docs | Exécuter batches | `/docs/` |
-| 7 | @search-doc | Interroger docs | Réponses |
+**No code modification required!**
 
 ---
 
-## 🆘 Aide et support
+## 📋 Workflow Summary
 
-### Problèmes courants
-
-**Q: Mon agent ne génère pas la documentation**
-A: Vérifiez que `/transcripts/clean/` contient des fichiers et que `OUTPUT_PATH` existe dans `prompts.config`
-
-**Q: La recherche ne retourne aucun résultat**
-A: Assurez-vous que la documentation a été générée dans `/docs/` et que le fichier `summary.md` existe
-
-**Q: Comment ajouter de nouveaux domaines?**
-A: Modifiez `DOMAINS` dans `.github/prompts.config` et relancez les agents
-
-**Q: Puis-je utiliser le système pour un autre projet?**
-A: Oui! Configurez les chemins dans `prompts.config` et exécutez les agents
+| Step | Tool | Action | Output |
+|------|------|--------|--------|
+| 1 | Manual | Add transcripts | `/transcripts/raw/` |
+| 2 | @clean-transcript | Clean transcripts | `/transcripts/clean/` |
+| 3 | Manual | Verify quality | ✓ Validation |
+| 4 | @generic-doc-transformation-agent | Generate agent | `create-docs.agent.md` |
+| 5 | @create-prompt | Generate prompts | `batch-*.md` |
+| 6 | @create-docs | Execute batches | `/docs/` |
+| 7 | @search-doc | Query docs | Answers |
 
 ---
 
-## 📄 Licences et auteurs
+## 🆘 Help and Support
 
-- **Projet**: Transcript to Documentation System
-- **Agent générique**: Conçu pour la réutilisabilité
-- **Basé sur**: GitHub Copilot Chat
+### Common Issues
+
+**Q: My agent doesn't generate documentation**
+A: Verify that `/transcripts/clean/` contains files and that `OUTPUT_PATH` exists in `prompts.config`
+
+**Q: Search returns no results**
+A: Ensure documentation was generated in `/docs/` and that `summary.md` file exists
+
+**Q: How do I add new domains?**
+A: Edit `DOMAINS` in `.github/prompts.config` and re-run agents
+
+**Q: Can I use the system for another project?**
+A: Yes! Configure paths in `prompts.config` and execute agents
+
+---
+
+## 📄 Licenses and Authors
+
+- **Project**: Transcript to Documentation System
+- **Generic Agent**: Designed for reusability
+- **Based on**: GitHub Copilot Chat
 
 ---
 
 **Version**: 1.0 (Generic Release)  
-**Date**: 2025  
-**Statut**: 🚀 Ready
+**Date**: 2026  
+**Status**: 🚀 Ready

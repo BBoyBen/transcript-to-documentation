@@ -2,46 +2,46 @@
 
 ## 📋 Overview
 
-Ce document décrit le processus global de transformation de **transcripts bruts** en **documentation structurée et interrogeable**. Il permet à tout agent impliqué dans le système de comprendre le contexte complet et sa place dans le flux de travail.
+This document describes the overall process for transforming **raw transcripts** into **structured and queryable documentation**. It enables any agent involved in the system to understand the complete context and their role in the workflow.
 
 ---
 
-## 🔄 Flux de travail global
+## 🔄 Overall Workflow
 
 ```
-Transcripts Bruts → Transcripts Nettoyés → Documentation → Recherche/Interrogation
+Raw Transcripts → Cleaned Transcripts → Documentation → Search/Querying
 ```
 
 ### Phases
 
-| Phase | Entrée | Agent/Outil | Sortie | Description |
+| Phase | Input | Agent/Tool | Output | Description |
 |-------|--------|-------------|--------|-------------|
-| **1. Préparation** | Enregistrements bruts | Manuel | `/transcripts/raw/` | Placer les transcripts bruts |
-| **2. Nettoyage** | `/transcripts/raw/` | `clean-transcript` | `/transcripts/clean/` | Transformer en markdown structuré |
-| **3. Validation** | `/transcripts/clean/` | Manuel | ✓ Approuvé | Vérifier qualité et complétude |
-| **4. Génération d'Agent** | `/transcripts/clean/` + config | `generic-doc-transformation-agent` | `create-docs.agent.md` | Créer agent personnalisé |
-| **5. Génération de Prompts** | `/transcripts/clean/` + config | `create-prompt` | `*.prompt.md` numérotés | Créer prompts d'exécution |
-| **6. Création de Docs** | `/transcripts/clean/` + prompts | `create-docs` | `/docs/` | Générer documentation finale |
-| **7. Interrogation** | `/docs/` | `search-doc` | Réponses | Rechercher et répondre |
+| **1. Preparation** | Raw recordings | Manual | `/transcripts/raw/` | Place raw transcripts |
+| **2. Cleaning** | `/transcripts/raw/` | `clean-transcript` | `/transcripts/clean/` | Transform into structured markdown |
+| **3. Validation** | `/transcripts/clean/` | Manual | ✓ Approved | Verify quality and completeness |
+| **4. Agent Generation** | `/transcripts/clean/` + config | `generic-doc-transformation-agent` | `create-docs.agent.md` | Create custom agent |
+| **5. Prompt Generation** | `/transcripts/clean/` + config | `create-prompt` | `*.prompt.md` numbered | Create execution prompts |
+| **6. Docs Creation** | `/transcripts/clean/` + prompts | `create-docs` | `/docs/` | Generate final documentation |
+| **7. Querying** | `/docs/` | `search-doc` | Answers | Search and respond |
 
 ---
 
-## 🎯 Détail des phases
+## 🎯 Phase Details
 
-### Phase 1: Préparation (Manual)
+### Phase 1: Preparation (Manual)
 
-**Objectif**: Collecter les transcripts bruts
+**Objective**: Collect raw transcripts
 
-**Entrée**: Enregistrements, transcriptions (fichiers `.transcript`)
+**Input**: Recordings, transcriptions (`.transcript` files)
 
 **Actions**:
-- Placer les fichiers dans `/transcripts/raw/`
-- Organiser par domaines si nécessaire
-- Format: Texte brut ou légèrement formaté
+- Place files in `/transcripts/raw/`
+- Organize by domains if necessary
+- Format: Plain text or slightly formatted
 
-**Sortie**: Fichiers `.transcript` dans `/transcripts/raw/`
+**Output**: `.transcript` files in `/transcripts/raw/`
 
-**Exemple**:
+**Example**:
 ```
 transcripts/raw/
 ├── KT_1.transcript
@@ -51,110 +51,110 @@ transcripts/raw/
 
 ---
 
-### Phase 2: Nettoyage (`clean-transcript` agent)
+### Phase 2: Cleaning (`clean-transcript` agent)
 
-**Objectif**: Transformer transcripts bruts en markdown structuré
+**Objective**: Transform raw transcripts into structured markdown
 
 **Agent**: `clean-transcript.agent.md`
 
-**Entrée**: Fichiers `.transcript` bruts
+**Input**: Raw `.transcript` files
 
-**Actions du agent**:
-1. Lire le fichier brut
-2. Corriger les erreurs de transcription
-3. Ajouter les omissions manquantes
-4. Structurer en sections markdown
-5. Appliquer les standards de formatage
-6. Ajouter les métadonnées (Topics, Related, Source)
+**Agent Actions**:
+1. Read raw file
+2. Correct transcription errors
+3. Add missing information
+4. Structure into markdown sections
+5. Apply formatting standards
+6. Add metadata (Topics, Related, Source)
 
-**Sortie**: Fichiers `.md` structurés
+**Output**: Structured `.md` files
 
-**Exemple de transformation**:
+**Example Transformation**:
 ```
-ENTRÉE (raw):
-"le transfert de connaissance sur le sujet X et Y... 
- et aussi le process Z"
+INPUT (raw):
+"knowledge transfer on subject X and Y... 
+ and also process Z"
 
-SORTIE (clean):
-# Transfert de Connaissances
+OUTPUT (clean):
+# Knowledge Transfer
 
 ## Topics
-- Sujet X
-- Sujet Y
+- Subject X
+- Subject Y
 - Process Z
 
 ## Content
-[Contenu structuré...]
+[Structured content...]
 ```
 
-**Résultat**: Fichiers `.md` organisés par domaines dans `/transcripts/clean/`
+**Result**: `.md` files organized by domains in `/transcripts/clean/`
 
 ---
 
 ### Phase 3: Validation (Manual)
 
-**Objectif**: S'assurer que les transcripts nettoyés sont corrects
+**Objective**: Ensure cleaned transcripts are correct
 
 **Actions**:
-- Examiner les fichiers dans `/transcripts/clean/`
-- Vérifier la complétude du contenu
-- Vérifier la structure markdown
-- Vérifier la présence des métadonnées
-- Corriger si nécessaire (relancer clean-transcript si besoin)
+- Examine files in `/transcripts/clean/`
+- Verify content completeness
+- Verify markdown structure
+- Verify presence of metadata
+- Correct if necessary (re-run clean-transcript if needed)
 
-**Critères d'acceptation**:
-- ✅ Contenu correct et complet
-- ✅ Structure logique et cohérente
-- ✅ Métadonnées présentes
-- ✅ Formatage markdown valide
-- ✅ Pas de corruption de fichiers
+**Acceptance Criteria**:
+- ✅ Correct and complete content
+- ✅ Logical and coherent structure
+- ✅ Metadata present
+- ✅ Valid markdown formatting
+- ✅ No file corruption
 
 ---
 
-### Phase 4: Génération d'Agent (`generic-doc-transformation-agent`)
+### Phase 4: Agent Generation (`generic-doc-transformation-agent`)
 
-**Objectif**: Créer un agent personnalisé pour la génération de documentation
+**Objective**: Create a custom agent for documentation generation
 
 **Prompt**: `generic-doc-transformation-agent.prompt.md`
 
-**Entrée**: 
-- Fichiers source dans `/transcripts/clean/`
-- Configuration depuis `prompts.config`
+**Input**: 
+- Source files in `/transcripts/clean/`
+- Configuration from `prompts.config`
 
-**Actions du prompt**:
-1. Lire la structure source
-2. Analyser les domaines et sections
-3. Lire `prompts.config` pour les paramètres
-4. Générer un agent `create-docs` personnalisé
-5. Adapter le agent à votre structure
+**Prompt Actions**:
+1. Read source structure
+2. Analyze domains and sections
+3. Read `prompts.config` for parameters
+4. Generate custom `create-docs` agent
+5. Adapt agent to your structure
 
-**Sortie**: `.github/agents/create-docs.agent.md` (personnalisé)
+**Output**: `.github/agents/create-docs.agent.md` (custom)
 
-**Résultat**: Agent généré et prêt pour exécution
+**Result**: Agent generated and ready for execution
 
 ---
 
-### Phase 5: Génération de Prompts (`create-prompt`)
+### Phase 5: Prompt Generation (`create-prompt`)
 
-**Objectif**: Créer tous les prompts d'exécution nécessaires
+**Objective**: Create all necessary execution prompts
 
 **Prompt**: `create-prompt.prompt.md`
 
-**Entrée**:
-- Fichiers source dans `/transcripts/clean/`
-- Configuration depuis `prompts.config`
+**Input**:
+- Source files in `/transcripts/clean/`
+- Configuration from `prompts.config`
 
-**Actions du prompt**:
-1. Compter les fichiers source
-2. Calculer groupement optimal en lots (2-4 fichiers)
-3. Générer prompt d'initialisation (`01-init-docs.prompt.md`)
-4. Générer prompts de batches (`02-batch-01.prompt.md`, `03-batch-02.prompt.md`, etc.)
-5. Générer prompt de références croisées (`N-cross-references.prompt.md`)
-6. Générer prompt de synthèse (`N+1-summary.prompt.md`)
+**Prompt Actions**:
+1. Count source files
+2. Calculate optimal batch grouping (2-4 files)
+3. Generate initialization prompt (`01-init-docs.prompt.md`)
+4. Generate batch prompts (`02-batch-01.prompt.md`, `03-batch-02.prompt.md`, etc.)
+5. Generate cross-references prompt (`N-cross-references.prompt.md`)
+6. Generate summary prompt (`N+1-summary.prompt.md`)
 
-**Sortie**: Fichiers `.prompt.md` numérotés dans `.github/prompts/`
+**Output**: Numbered `.prompt.md` files in `.github/prompts/`
 
-**Exemple pour 6 fichiers (2 par batch)**:
+**Example for 6 files (2 per batch)**:
 ```
 .github/prompts/
 ├── 01-init-docs.prompt.md
@@ -167,40 +167,40 @@ SORTIE (clean):
 
 ---
 
-### Phase 6: Création de Documentation (`create-docs` agent)
+### Phase 6: Documentation Creation (`create-docs` agent)
 
-**Objectif**: Transformer les transcripts nettoyés en documentation final
+**Objective**: Transform cleaned transcripts into final documentation
 
-**Agent**: `create-docs.agent.md` (généré à phase 4)
+**Agent**: `create-docs.agent.md` (generated in phase 4)
 
-**Entrée**: 
-- Fichiers `.md` structurés dans `/transcripts/clean/`
-- Prompts numérotés générés à phase 5
+**Input**: 
+- Structured `.md` files in `/transcripts/clean/`
+- Numbered prompts generated in phase 5
 
-**Actions du agent** (exécution séquentielle):
-1. **Initialisation** (`01-init-docs.prompt.md`):
-   - Créer la structure de base
-   - Initialiser les fichiers de destination
+**Agent Actions** (sequential execution):
+1. **Initialization** (`01-init-docs.prompt.md`):
+   - Create base structure
+   - Initialize destination files
 
-2. **Traitement par batches** (`02-batch-XX.prompt.md`):
-   - Transformer chaque batch de 2-4 fichiers
-   - Générer sections structurées
-   - Ajouter métadonnées (Topics, Related, Source)
-   - Créer fichiers dans `/docs/`
+2. **Batch Processing** (`02-batch-XX.prompt.md`):
+   - Transform each batch of 2-4 files
+   - Generate structured sections
+   - Add metadata (Topics, Related, Source)
+   - Create files in `/docs/`
 
-3. **Références croisées** (`N-cross-references.prompt.md`):
-   - Analyser les connections entre documents
-   - Ajouter les liens "Related"
-   - Mettre à jour les références
+3. **Cross-references** (`N-cross-references.prompt.md`):
+   - Analyze connections between documents
+   - Add "Related" links
+   - Update references
 
-4. **Synthèse** (`N+1-summary.prompt.md`):
-   - Créer index complet
-   - Générer vue d'ensemble
-   - Créer fichier `summary.md`
+4. **Summary** (`N+1-summary.prompt.md`):
+   - Create complete index
+   - Generate overview
+   - Create `summary.md` file
 
-**Sortie**: Documentation structurée dans `/docs/`
+**Output**: Structured documentation in `/docs/`
 
-**Structure résultante**:
+**Resulting structure**:
 ```
 docs/
 ├── summary.md
@@ -214,45 +214,45 @@ docs/
 
 ---
 
-### Phase 7: Interrogation (`search-doc` agent)
+### Phase 7: Querying (`search-doc` agent)
 
-**Objectif**: Permettre la recherche et l'interrogation de la documentation
+**Objective**: Enable search and querying of documentation
 
-**Agent**: `search-doc.agent.md` (générique)
+**Agent**: `search-doc.agent.md` (generic)
 
-**Entrée**: Documentation dans `/docs/`
+**Input**: Documentation in `/docs/`
 
-**Utilisation**:
+**Usage**:
 ```
-@search-doc "Qu'est-ce que [Concept] ?"
-@search-doc "Comment faire [Action] ?"
-@search-doc "Quelle est la différence entre [A] et [B] ?"
+@search-doc "What is [Concept] ?"
+@search-doc "How to [Action] ?"
+@search-doc "What is the difference between [A] and [B] ?"
 ```
 
-**Actions du agent**:
-1. Analyser la question
-2. Rechercher dans `/docs/`
-3. Trouver documents pertinents
-4. Extraire informations
-5. Générer réponse structurée
-6. Fournir citations et sources
+**Agent Actions**:
+1. Analyze the question
+2. Search in `/docs/`
+3. Find relevant documents
+4. Extract information
+5. Generate structured response
+6. Provide citations and sources
 
-**Réponses**:
-- ✅ Basées UNIQUEMENT sur la documentation
-- ✅ Avec citations exactes
-- ✅ Avec références aux sources
-- ✅ Indiquant les limitations
-- ✅ Suggestions de documents connexes
+**Responses**:
+- ✅ Based ONLY on documentation
+- ✅ With exact citations
+- ✅ With references to sources
+- ✅ Indicating limitations
+- ✅ Suggestions for related documents
 
 ---
 
-## 🔧 Configuration centrale
+## 🔧 Central Configuration
 
-### Fichier: `.github/prompts.config`
+### File: `.github/prompts.config`
 
-Ce fichier YAML contrôle **tout le processus**. Les agents et prompts le lisent pour adapter leur comportement.
+This YAML file controls **the entire process**. Agents and prompts read it to adapt their behavior.
 
-**Paramètres clés**:
+**Key Parameters**:
 
 ```yaml
 PROJECT_NAME: My Project
@@ -264,21 +264,21 @@ DOMAINS:
   - Domain1
   - Domain2
 BATCH_SIZE: 2-4
-LANGUAGE: Français
+LANGUAGE: English
 ```
 
 **Impact**:
-- Phase 4: `generic-doc-transformation-agent` l'utilise pour générer l'agent
-- Phase 5: `create-prompt` l'utilise pour calculer les lots
-- Phase 6: `create-docs` l'utilise pour structurer la documentation
-- Phase 7: `search-doc` l'utilise pour chercher dans `OUTPUT_PATH`
+- Phase 4: `generic-doc-transformation-agent` uses it to generate the agent
+- Phase 5: `create-prompt` uses it to calculate batches
+- Phase 6: `create-docs` uses it to structure documentation
+- Phase 7: `search-doc` uses it to search in `OUTPUT_PATH`
 
 ---
 
-## 📊 Dépendances et flux de données
+## 📊 Dependencies and Data Flow
 
 ```
-prompts.config (source de vérité)
+prompts.config (source of truth)
     ↓
     ├→ Phase 4: generate create-docs agent
     ├→ Phase 5: generate numbered prompts
@@ -294,100 +294,100 @@ prompts.config (source de vérité)
 
 ---
 
-## ✅ Checklist de complétion
+## ✅ Completion Checklist
 
-Pour confirmer que chaque phase est terminée:
+To confirm that each phase is completed:
 
-- [ ] **Phase 1**: Fichiers `.transcript` dans `/transcripts/raw/`
-- [ ] **Phase 2**: Fichiers `.md` générés dans `/transcripts/clean/`
-- [ ] **Phase 3**: Validation manuelle complétée, qualité ✓
-- [ ] **Phase 4**: Fichier `create-docs.agent.md` généré
-- [ ] **Phase 5**: Fichiers `.prompt.md` numérotés dans `.github/prompts/`
-- [ ] **Phase 6**: Documentation générée dans `/docs/`
-- [ ] **Phase 7**: Interrogation fonctionnelle via `@search-doc`
-
----
-
-## 🔄 Itération et amélioration
-
-### Si la documentation n'est pas satisfaisante
-
-**Option 1**: Améliorer les transcripts nettoyés
-1. Modifier les fichiers dans `/transcripts/clean/`
-2. Relancer Phase 5 (regenerate prompts)
-3. Relancer Phase 6 (regenerate docs)
-
-**Option 2**: Modifier la configuration
-1. Éditer `.github/prompts.config`
-2. Relancer Phase 4 (regenerate agent)
-3. Relancer Phase 5 (regenerate prompts)
-4. Relancer Phase 6 (regenerate docs)
-
-**Option 3**: Corriger directement
-1. Éditer les fichiers dans `/docs/`
-2. Relancer Phase 7 (search-doc lira les fichiers modifiés)
+- [ ] **Phase 1**: `.transcript` files in `/transcripts/raw/`
+- [ ] **Phase 2**: `.md` files generated in `/transcripts/clean/`
+- [ ] **Phase 3**: Manual validation completed, quality ✓
+- [ ] **Phase 4**: `create-docs.agent.md` file generated
+- [ ] **Phase 5**: Numbered `.prompt.md` files in `.github/prompts/`
+- [ ] **Phase 6**: Documentation generated in `/docs/`
+- [ ] **Phase 7**: Functional querying via `@search-doc`
 
 ---
 
-## 🎓 Résumé pour les agents
+## 🔄 Iteration and Improvement
 
-### Pour `clean-transcript`:
-- **Rôle**: Transformer brut → structuré
-- **Entrée**: `/transcripts/raw/`
-- **Sortie**: `/transcripts/clean/`
+### If documentation is not satisfactory
+
+**Option 1**: Improve cleaned transcripts
+1. Modify files in `/transcripts/clean/`
+2. Re-run Phase 5 (regenerate prompts)
+3. Re-run Phase 6 (regenerate docs)
+
+**Option 2**: Modify configuration
+1. Edit `.github/prompts.config`
+2. Re-run Phase 4 (regenerate agent)
+3. Re-run Phase 5 (regenerate prompts)
+4. Re-run Phase 6 (regenerate docs)
+
+**Option 3**: Fix directly
+1. Edit files in `/docs/`
+2. Re-run Phase 7 (search-doc will read the modified files)
+
+---
+
+## 🎓 Summary for Agents
+
+### For `clean-transcript`:
+- **Role**: Transform raw → structured
+- **Input**: `/transcripts/raw/`
+- **Output**: `/transcripts/clean/`
 - **Phase**: 2
 
-### Pour `generic-doc-transformation-agent`:
-- **Rôle**: Générer agent personnalisé
-- **Entrée**: `/transcripts/clean/` + `prompts.config`
-- **Sortie**: `create-docs.agent.md`
+### For `generic-doc-transformation-agent`:
+- **Role**: Generate custom agent
+- **Input**: `/transcripts/clean/` + `prompts.config`
+- **Output**: `create-docs.agent.md`
 - **Phase**: 4
 
-### Pour `create-prompt`:
-- **Rôle**: Générer prompts d'exécution
-- **Entrée**: `/transcripts/clean/` + `prompts.config`
-- **Sortie**: `*.prompt.md` numérotés
+### For `create-prompt`:
+- **Role**: Generate execution prompts
+- **Input**: `/transcripts/clean/` + `prompts.config`
+- **Output**: `*.prompt.md` numbered
 - **Phase**: 5
 
-### Pour `create-docs`:
-- **Rôle**: Générer documentation
-- **Entrée**: `/transcripts/clean/` + prompts
-- **Sortie**: `/docs/`
+### For `create-docs`:
+- **Role**: Generate documentation
+- **Input**: `/transcripts/clean/` + prompts
+- **Output**: `/docs/`
 - **Phase**: 6
 
-### Pour `search-doc`:
-- **Rôle**: Interroger documentation
-- **Entrée**: `/docs/`
-- **Sortie**: Réponses structurées
+### For `search-doc`:
+- **Role**: Query documentation
+- **Input**: `/docs/`
+- **Output**: Structured responses
 - **Phase**: 7
 
 ---
 
 ## 📝 Conventions
 
-- **Fichiers bruts**: `.transcript` (texte brut)
-- **Fichiers nettoyés**: `.md` (markdown structuré)
-- **Prompts d'exécution**: `NN-name.prompt.md` (numérotés, format .prompt.md)
-- **Documentation finale**: `.md` (markdown avec métadonnées)
+- **Raw files**: `.transcript` (plain text)
+- **Cleaned files**: `.md` (structured markdown)
+- **Execution prompts**: `NN-name.prompt.md` (numbered, .prompt.md format)
+- **Final documentation**: `.md` (markdown with metadata)
 - **Configuration**: `prompts.config` (YAML)
 
 ---
 
-## 🚀 Flux d'utilisation typique
+## 🚀 Typical Usage Flow
 
 ```
-1. Préparer transcripts → /transcripts/raw/
-2. Exécuter @clean-transcript
-3. Vérifier qualité
-4. Exécuter @generic-doc-transformation-agent
-5. Exécuter @create-prompt
-6. Exécuter @create-docs (avec tous les prompts)
-7. Utiliser @search-doc pour interroger
+1. Prepare transcripts → /transcripts/raw/
+2. Execute @clean-transcript
+3. Verify quality
+4. Execute @generic-doc-transformation-agent
+5. Execute @create-prompt
+6. Execute @create-docs (with all prompts)
+7. Use @search-doc to query
 ```
 
 ---
 
 **Version**: 1.0  
-**Langue**: Français  
-**Audience**: Agents et développeurs  
-**Statut**: Generic & Reusable
+**Language**: English  
+**Audience**: Agents and developers  
+**Status**: Generic & Reusable
