@@ -72,6 +72,7 @@ Assurez-vous que les fichiers suivants existent dans votre projet:
 ├── instructions/
 │   ├── agents.instructions.md                  ← Règles agents
 │   ├── markdown.instructions.md                ← Standards markdown
+│   ├── process.instructions.md                 ← Process global
 │   └── prompt.instructions.md                  ← Standards prompts
 └── prompts.config                              ← Configuration centrale
 
@@ -155,6 +156,14 @@ BATCH_SIZE: 2-4
 - Automation: Batch detection automatique
 
 ### Instructions (`.github/instructions/`)
+
+#### `process.instructions.md`
+Processus global et flux de travail:
+- Description complète du système end-to-end
+- Phases et étapes du pipeline
+- Flux de données entre composants
+- Dépendances et ordonnancement
+- Checklists de complétion
 
 #### `agents.instructions.md`
 Règles de création pour les fichiers `.agent.md`:
