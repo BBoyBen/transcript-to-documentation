@@ -1,8 +1,6 @@
 ---
 description: 'Interactive prompt generator for batch-based documentation transformation execution'
 usage: 'Pass project parameters directly in chat - no file editing needed. Agent auto-determines batch structure.'
-language: 'French'
-interactive: true
 ---
 
 # Batch Execution Prompt Generator (Interactive)

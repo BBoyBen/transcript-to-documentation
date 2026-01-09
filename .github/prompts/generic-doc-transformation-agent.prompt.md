@@ -1,7 +1,6 @@
 ---
 description: 'Template for creating documentation transformation agents'
 usage: 'Customize the variables and use this prompt to create agent files for different projects'
-language: 'French'
 ---
 
 # Documentation Transformation Agent Generator
