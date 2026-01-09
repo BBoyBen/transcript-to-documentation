@@ -234,9 +234,10 @@ Centralized YAML file containing:
 
 #### `docs/`
 - **Contains**: Final generated documentation
-- **Structure**: Organized by domains
+- **Structure**: Organized by domains and hierarchical sub-folders
 - **Format**: Markdown with metadata
 - **Role**: Documentation destination
+- **Flexibility**: Agent automatically creates sub-folders as needed for optimal documentation hierarchy (not limited to domain folders, can create up to 4 nesting levels)
 
 #### `temp/`
 - **Contains**: Progress temporary files
@@ -375,6 +376,7 @@ transcripts/clean/
 - SUMMARY.md with statistics
 - All cross-references resolved
 - Validation report confirming completion
+- **Hierarchical structure**: Agent creates sub-folders as needed (up to 4 nesting levels) for optimal documentation organization beyond domain-level grouping
 
 ### Step 7: Query Documentation
 

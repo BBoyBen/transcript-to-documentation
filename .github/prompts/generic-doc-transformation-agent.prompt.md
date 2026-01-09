@@ -195,6 +195,7 @@ All generated documentation MUST be in [Language]. This includes:
 - **Destination**: [Output Path from parameters]
 - **Format**: [Output Format from parameters]
 - **Organization**: Hierarchical with 2-4 nesting levels maximum
+- **Folder Structure**: Flexible - Create sub-folders as needed beyond domain organization for optimal documentation hierarchy
 - **Index**: `summary.md` (or equivalent) at root
 
 ## Domain Organization
@@ -219,14 +220,16 @@ All generated documentation MUST be in [Language]. This includes:
 3. Create batch plan (2-4 files per batch)
 4. Create `/temp/[agent-name]-progress.md` with batch list
 5. Create base [Output Path] directory structure
+6. Plan sub-folder hierarchy to optimize documentation organization (up to 4 nesting levels based on content analysis)
 
 **Step 1-N: Process Each Batch**
 For each batch:
 1. Read batch source files
 2. Analyze and structure content
-3. Create organized documentation files in [Output Path]
-4. Use TBD placeholders for cross-batch references: `[TBD: reference to Batch X]`
-5. Update progress file with completion status
+3. Create sub-folders as needed within [Output Path] for optimal organization (respecting 2-4 nesting levels)
+4. Create organized documentation files in appropriate folders
+5. Use TBD placeholders for cross-batch references: `[TBD: reference to Batch X]`
+6. Update progress file with completion status
 
 **Step N+1: Cross-Reference Resolution**
 1. Review all generated documentation
