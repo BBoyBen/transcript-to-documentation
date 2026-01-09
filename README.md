@@ -69,8 +69,7 @@ Ensure following files exist in your project:
 ├── prompts/
 │   ├── generic-doc-transformation-agent.prompt.md  ← Agent generator
 │   ├── generate-doc-plan.prompt.md             ← Plan generator
-│   ├── execute-doc-plan.prompt.md              ← Plan executor
-│   └── create-prompt.prompt.md                 ← Prompt generator
+│   └── execute-doc-plan.prompt.md              ← Plan executor
 ├── instructions/
 │   ├── agents.instructions.md                  ← Agent rules
 │   ├── markdown.instructions.md                ← Markdown standards
@@ -166,14 +165,6 @@ BATCH_SIZE: 2-4
 - Performs detailed validation at each phase
 - Output: Complete documentation in `/docs/` with quality reports
 - Features: Automatic resumption, comprehensive error handling, detailed metrics
-
-#### `create-prompt.prompt.md`
-**Role**: Execution prompt generator (legacy)
-- Scans source files
-- Intelligently groups by batches (2-4 files)
-- Generates all execution prompts
-- Output: Prompts for init + batches + summary
-- Automation: Automatic batch detection
 
 ### Instructions (`.github/instructions/`)
 
