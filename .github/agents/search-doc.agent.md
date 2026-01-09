@@ -363,15 +363,20 @@ Position in hierarchy indicates detail level and context.
 
 ## Language Requirements
 
-�🇧 **English Required**
+**Response Language**: Responses must be in the language specified in `prompts.config` (LANGUAGE parameter).
 
-All responses must be in **English**:
+All responses must respect this language choice:
 - Headings and sub-headings
 - Body text
-- Quotes (keep original language but explain in English)
+- Quotes (keep original language but explain in configured language)
 - Metadata and annotations
 
-Exception: English technical terms can be kept if that's the usage in documentation (e.g., "connector", "workflow").
+**Automatic Adaptation**: This agent automatically adapts to:
+- `LANGUAGE: English` → Respond in English
+- `LANGUAGE: Français` → Respond in French
+- `LANGUAGE: [Other]` → Respond in specified language
+
+Exception: Technical terms can be kept in original language if that's the usage in documentation (e.g., "connector", "workflow").
 
 ## Execution Examples
 

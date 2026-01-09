@@ -20,8 +20,8 @@ Raw Transcripts → Cleaned Transcripts → Documentation → Search/Querying
 | **2. Cleaning** | `/transcripts/raw/` | `clean-transcript` | `/transcripts/clean/` | Transform into structured markdown |
 | **3. Validation** | `/transcripts/clean/` | Manual | ✓ Approved | Verify quality and completeness |
 | **4. Agent Generation** | `/transcripts/clean/` + config | `generic-doc-transformation-agent` | `create-docs.agent.md` | Create custom agent |
-| **5. Prompt Generation** | `/transcripts/clean/` + config | `create-prompt` | `*.prompt.md` numbered | Create execution prompts |
-| **6. Docs Creation** | `/transcripts/clean/` + prompts | `create-docs` | `/docs/` | Generate final documentation |
+| **5. Plan Generation** | `/transcripts/clean/` + config | `generate-doc-plan` | `temp/plan.md` | Generate complete execution plan |
+| **6. Docs Creation** | `temp/plan.md` | `execute-doc-plan` | `/docs/` | Execute all phases sequentially |
 | **7. Querying** | `/docs/` | `search-doc` | Answers | Search and respond |
 
 ---
@@ -134,69 +134,105 @@ OUTPUT (clean):
 
 ---
 
-### Phase 5: Prompt Generation (`create-prompt`)
+### Phase 5: Plan Generation (`generate-doc-plan`)
 
-**Objective**: Create all necessary execution prompts
+**Objective**: Create a complete execution plan for documentation transformation
 
-**Prompt**: `create-prompt.prompt.md`
+**Prompt**: `generate-doc-plan.prompt.md`
 
-**Input**:
+**Input**: 
 - Source files in `/transcripts/clean/`
 - Configuration from `prompts.config`
 
 **Prompt Actions**:
-1. Count source files
-2. Calculate optimal batch grouping (2-4 files)
-3. Generate initialization prompt (`01-init-docs.prompt.md`)
-4. Generate batch prompts (`02-batch-01.prompt.md`, `03-batch-02.prompt.md`, etc.)
-5. Generate cross-references prompt (`N-cross-references.prompt.md`)
-6. Generate summary prompt (`N+1-summary.prompt.md`)
+1. Read configuration from `.github/prompts.config`
+2. Scan and analyze all source files
+3. Create intelligent batch grouping (2-4 files per batch)
+4. Generate complete execution plan with all phases
+5. Calculate optimal execution order and timing
 
-**Output**: Numbered `.prompt.md` files in `.github/prompts/`
+**Output**: Structured plan file `temp/plan.md`
 
-**Example for 6 files (2 per batch)**:
+**Result**: Plan ready for execution by `execute-doc-plan` prompt
+
+**Example plan structure**:
 ```
-.github/prompts/
-├── 01-init-docs.prompt.md
-├── 02-batch-01.prompt.md (KT_1, KT_2)
-├── 03-batch-02.prompt.md (KT_3, KT_4)
-├── 04-batch-03.prompt.md (KT_5, KT_6)
-├── 05-cross-references.prompt.md
-└── 06-summary.prompt.md
+temp/plan.md
+├── Project Summary (statistics, domains, batches)
+├── Configuration (all parameters)
+├── Batch Structure (list of all batches with files)
+├── Execution Phases (detailed steps for each phase)
+│   ├── Phase 0: Initialization
+│   ├── Phase 1-N: Batch processing
+│   ├── Phase N+1: Cross-reference resolution
+│   ├── Phase N+2: Summary generation
+│   └── Phase N+3: Final validation
+├── Execution Order (strict sequential order)
+└── Progress Tracking (format and update strategy)
 ```
 
 ---
 
-### Phase 6: Documentation Creation (`create-docs` agent)
+### Phase 6: Documentation Creation (`execute-doc-plan`)
 
-**Objective**: Transform cleaned transcripts into final documentation
+**Objective**: Execute the complete plan to transform all transcripts into documentation
 
-**Agent**: `create-docs.agent.md` (generated in phase 4)
+**Prompt**: `execute-doc-plan.prompt.md`
 
 **Input**: 
-- Structured `.md` files in `/transcripts/clean/`
-- Numbered prompts generated in phase 5
+- Execution plan from `temp/plan.md` (generated in Phase 5)
+- Source files in `/transcripts/clean/`
 
-**Agent Actions** (sequential execution):
-1. **Initialization** (`01-init-docs.prompt.md`):
-   - Create base structure
-   - Initialize destination files
+**Prompt Actions** (sequential execution of all phases):
 
-2. **Batch Processing** (`02-batch-XX.prompt.md`):
-   - Transform each batch of 2-4 files
-   - Generate structured sections
-   - Add metadata (Topics, Related, Source)
-   - Create files in `/docs/`
+1. **Phase 0: Initialization**:
+   - Verify plan exists and is valid
+   - Create output folder structure in `/docs/`
+   - Initialize progress tracking file
+   - Validate all source files are accessible
 
-3. **Cross-references** (`N-cross-references.prompt.md`):
-   - Analyze connections between documents
-   - Add "Related" links
-   - Update references
+2. **Phases 1-N: Batch Processing** (executes each batch):
+   - Read source files for current batch
+   - Extract key concepts and structure
+   - Create documentation files with metadata (Topics, Related, Source)
+   - Optimize for AI search
+   - Mark cross-references with TBD placeholders
+   - Update progress file
 
-4. **Summary** (`N+1-summary.prompt.md`):
-   - Create complete index
-   - Generate overview
-   - Create `summary.md` file
+3. **Phase N+1: Cross-Reference Resolution**:
+   - Scan all generated files
+   - Identify all TBD markers
+   - Replace with actual relative links
+   - Validate all links work correctly
+   - Update progress file
+
+4. **Phase N+2: Summary Generation**:
+   - Scan all generated documentation
+   - Create README.md with complete index and navigation
+   - Create SUMMARY.md with statistics
+   - Organize by domain and topic
+   - Update progress file
+
+5. **Phase N+3: Final Validation**:
+   - Verify complete structure
+   - Validate metadata completeness
+   - Check all links are valid
+   - Verify no TBD markers remain
+   - Generate validation report
+   - Mark project as COMPLETE
+
+**Output**: Complete documentation in `/docs/`
+
+**Additional Outputs**:
+- `temp/execution-report.md` - Detailed execution timeline
+- `temp/validation-report.md` - Validation results
+- Progress tracked in `temp/[progress-file]`
+
+**Features**:
+- ✅ Automatically executes all phases without pause
+- ✅ Continuous progress tracking
+- ✅ Can resume after interruption
+- ✅ Complete error handling
 
 **Output**: Structured documentation in `/docs/`
 

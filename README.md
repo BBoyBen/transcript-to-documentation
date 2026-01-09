@@ -234,10 +234,11 @@ Centralized YAML file containing:
 graph LR
     A["Raw Transcripts<br/>/transcripts/raw"] -->|"@clean-transcript"| B["Cleaned Transcripts<br/>/transcripts/clean"]
     B -->|"@generic-doc-transformation-agent"| C["Agent Created<br/>create-docs.agent.md"]
-    B -->|"@create-prompt"| D["Generated Prompts<br/>.prompt.md numbered"]
-    C -->|"executes with"| E["Documentation<br/>/docs"]
-    D -->|"feeds"| E
-    E -->|"@search-doc"| F["Answers"]
+    B -->|"/generate-doc-plan"| D["Plan Generated<br/>temp/plan.md"]
+    C -->|"executes"| E["@create-docs<br/>/execute-doc-plan"]
+    D -->|"guides"| E
+    E -->|"produces"| F["Documentation<br/>/docs"]
+    F -->|"@search-doc"| G["Answers"]
 ```
 
 ### Step 1: Prepare Raw Transcripts
@@ -310,60 +311,50 @@ transcripts/clean/
 - Adapted to your domains
 - Ready for execution
 
-### Step 5: Create Execution Prompts
+### Step 5: Generate Execution Plan
 
-**Tool**: `create-prompt.prompt.md`
-
-**Steps**:
-1. Use prompt in chat:
-   ```
-   /create-prompt Generate the prompts for me
-   ```
-2. Prompt auto-detects:
-   - Number of source files
-   - Optimal batch grouping
-   - Creation of all prompts
-
-**Output**: Numbered `.prompt.md` files created in `.github/prompts/`
-- `01-init-docs.prompt.md` - Initialization
-- `02-batch-01.prompt.md`, `03-batch-02.prompt.md`, etc. - Processing batches
-- `N-cross-references.prompt.md` - Cross-references
-- `N+1-summary.prompt.md` - Final summary
-
-### Step 6: Execute Documentation Prompts
-
-**Tool**: Generated agent `create-docs.agent.md`
+**Tool**: `generate-doc-plan.prompt.md`
 
 **Steps**:
+1. Use prompt directly in chat (parameters read from `prompts.config`):
+   ```
+   /generate-doc-plan
+   ```
+2. Prompt analyzes source files and creates complete plan
 
-1. **Initialize** documentation:
+**Output**: Complete execution plan in `temp/plan.md`
+- Project summary with statistics
+- Batch structure with file groupings
+- All execution phases (init + batches + cross-refs + summary + validation)
+- Strict execution order
+- Progress tracking format
+
+### Step 6: Execute Documentation Plan
+
+**Tool**: `execute-doc-plan.prompt.md` executed as `@create-docs` agent
+
+**Steps**:
+1. Use the generated agent to execute the plan:
    ```
    @create-docs
-   /01-init-docs
+   /execute-doc-plan
    ```
 
-2. **Process batches** (one at a time or parallel):
-   ```
-   @create-docs
-   /02-batch-01
-   
-   @create-docs
-   /03-batch-02
-   ```
+2. The plan executes automatically through all phases:
+   - **Phase 0**: Initialization (creates folder structure)
+   - **Phases 1-N**: Batch Processing (transforms transcripts by batch)
+   - **Phase N+1**: Cross-Reference Resolution (links documents)
+   - **Phase N+2**: Summary Generation (creates index and overview)
+   - **Phase N+3**: Final Validation (verifies completeness)
 
-3. **Add cross-references**:
-   ```
-   @create-docs
-   /N-cross-references
-   ```
-
-4. **Generate summary**:
-   ```
-   @create-docs
-   /N+1-summary
-   ```
+3. Progress is tracked continuously with updates
 
 **Output**: Complete documentation in `/docs/`
+- Structured markdown files with metadata
+- README.md with full index and navigation
+- SUMMARY.md with statistics
+- All cross-references resolved
+- Validation report confirming completion
 
 ### Step 7: Query Documentation
 
@@ -488,8 +479,8 @@ Agents and prompts reading from `prompts.config` automatically adapt:
 | 2 | @clean-transcript | Clean transcripts | `/transcripts/clean/` |
 | 3 | Manual | Verify quality | ✓ Validation |
 | 4 | @generic-doc-transformation-agent | Generate agent | `create-docs.agent.md` |
-| 5 | @create-prompt | Generate prompts | `batch-*.md` |
-| 6 | @create-docs | Execute batches | `/docs/` |
+| 5 | /generate-doc-plan | Generate plan | `temp/plan.md` |
+| 6 | @create-docs /execute-doc-plan | Execute plan | `/docs/` |
 | 7 | @search-doc | Query docs | Answers |
 
 ---
