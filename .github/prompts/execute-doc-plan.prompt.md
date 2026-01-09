@@ -57,11 +57,9 @@ Transform source transcripts into structured documentation by following the deta
    [ ] Phase N+3: Final Validation
    
    Total estimated time: ~[TIME] hours
-   
-   🎯 Ready to start?
    ```
 
-5. **Wait for confirmation** before starting execution
+5. **Automatically start execution** of all phases
 
 ### Step 1: Sequential Phase Execution
 
@@ -308,10 +306,7 @@ For each phase in plan order:
 
 #### 1.4 Transition to Next Phase
 
-1. **Brief pause** (simulated in execution):
-   - Allow user to verify if needed
-   
-2. **Display overall progress**:
+1. **Display overall progress** and immediately continue:
    ```
    📊 OVERALL PROGRESS
    
@@ -328,7 +323,7 @@ For each phase in plan order:
    Estimated time remaining: ~[TIME]
    ```
    
-3. **Continue automatically** to next phase
+2. **Continue automatically** to next phase without pause
 
 ### Step 2: Finalization and Reporting
 
