@@ -161,11 +161,7 @@ Based on the parameters provided by the user, generate an agent file with this s
 ---
 description: '[Agent Description from parameters]'
 name: '[Agent Name from parameters]'
-tools:
-  - read
-  - edit
-  - search
-model: claude-sonnet-4.5
+tools: ['read', 'edit', 'search']
 target: vscode
 infer: false
 ---
