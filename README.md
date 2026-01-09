@@ -68,6 +68,8 @@ Ensure following files exist in your project:
 │   └── search-doc.agent.md                     ← Search agent
 ├── prompts/
 │   ├── generic-doc-transformation-agent.prompt.md  ← Agent generator
+│   ├── generate-doc-plan.prompt.md             ← Plan generator
+│   ├── execute-doc-plan.prompt.md              ← Plan executor
 │   └── create-prompt.prompt.md                 ← Prompt generator
 ├── instructions/
 │   ├── agents.instructions.md                  ← Agent rules
@@ -147,8 +149,26 @@ BATCH_SIZE: 2-4
 - Input: Source files + parameters
 - Output: `.github/agents/create-docs.agent.md`
 
+#### `generate-doc-plan.prompt.md`
+**Role**: Execution plan generator
+- Analyzes source files and folder structure
+- Creates comprehensive execution plan
+- Groups files into logical batches (2-4 files per batch)
+- Defines all phases (init, batches, cross-refs, summary, validation)
+- Output: Complete plan in `temp/plan.md`
+- Features: Progress tracking format, success criteria, timing estimates
+
+#### `execute-doc-plan.prompt.md`
+**Role**: Plan executor agent
+- Reads and executes plan from `temp/plan.md`
+- Manages all phases automatically without pauses
+- Tracks progress continuously
+- Performs detailed validation at each phase
+- Output: Complete documentation in `/docs/` with quality reports
+- Features: Automatic resumption, comprehensive error handling, detailed metrics
+
 #### `create-prompt.prompt.md`
-**Role**: Execution prompt generator
+**Role**: Execution prompt generator (legacy)
 - Scans source files
 - Intelligently groups by batches (2-4 files)
 - Generates all execution prompts
@@ -462,8 +482,9 @@ BATCH_SIZE: 3-5  # Process 3-5 files per batch
 ### Effect of Modifications
 
 Agents and prompts reading from `prompts.config` automatically adapt:
-- ✅ `generic-doc-transformation-agent.prompt.md` uses new parameters
-- ✅ `create-prompt.prompt.md` adjusts batches
+- ✅ `generic-doc-transformation-agent.prompt.md` uses new parameters to generate agent
+- ✅ `generate-doc-plan.prompt.md` adjusts plan based on new structure
+- ✅ `execute-doc-plan.prompt.md` executes plan with new settings
 - ✅ `create-docs.agent.md` generates according to new structure
 - ✅ `search-doc.agent.md` queries new `OUTPUT_PATH`
 
