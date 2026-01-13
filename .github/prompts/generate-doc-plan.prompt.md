@@ -10,7 +10,7 @@ This prompt analyzes source files and generates a **deterministic, machine-reada
 ## Mission
 
 Create `temp/plan.json` and `temp/plan.md` files containing:
-- **plan.json**: Machine-readable structured plan with checksums for deterministic execution
+- **plan.json**: Machine-readable structured plan for deterministic execution
 - **plan.md**: Human-readable documentation of the plan for review and auditing
 
 The plan includes all execution phases: initialization, batch processing, cross-references, summary generation, and validation.
@@ -136,8 +136,7 @@ These conventions MUST be read from `.github/prompts.config` (same format as the
      WHILE files_in_domain not empty:
        batch = take next batch_size files
        batch_id = generate_id(domain, batch_number)
-       calculate_checksums(batch)
-       store_batch(batch_id, files, checksums)
+       store_batch(batch_id, files)
    ```
 
 4. **Generate deterministic batch IDs**:
@@ -151,7 +150,7 @@ These conventions MUST be read from `.github/prompts.config` (same format as the
    - Phase N+2: Summary (after cross-refs)
    - Phase N+3: Validation (always last)
 
-**Output**: Deterministic batch structure with checksums
+**Output**: Deterministic batch structure
 
 ### Step 3ter: Retrieval-Friendly Splitting (Deterministic)
 
@@ -226,7 +225,6 @@ Create a structured JSON file with the following schema:
         "path": "relative/path/to/file.md",
         "domain": "detected or from config",
         "size_bytes": 0,
-        "checksum": "SHA256 hash",
         "batch_id": "assigned batch"
       }
     ]
@@ -343,7 +341,7 @@ Create a structured JSON file with the following schema:
         {
           "action_id": "INIT_003",
           "description": "Validate source files",
-          "validation": "All source files accessible and checksums match"
+          "validation": "All source files accessible and readable"
         }
       ],
       "success_criteria": [
@@ -364,7 +362,7 @@ Create a structured JSON file with the following schema:
           "action_id": "BATCH_001_READ",
           "description": "Read source files",
           "files": ["list from batch"],
-          "validation": "Files read completely, checksums verified"
+          "validation": "Files read completely"
         },
         {
           "action_id": "BATCH_001_TRANSFORM",
@@ -402,8 +400,6 @@ Create a structured JSON file with the following schema:
   }
 }
 ```
-
-**IMPORTANT**: Calculate plan_hash AFTER generating complete JSON, then insert it.
 
 #### Step 4B: Generate `temp/plan.md` (Human-Readable)
 
@@ -698,9 +694,9 @@ The file `[PROGRESS_FILE]` will be updated after each phase with:
 **Purpose**: Deterministic execution plan for `execute-doc-plan.prompt.md`
 
 **Content**:
-- Complete metadata with plan_hash for integrity
+- Complete metadata
 - Full project configuration
-- Source file analysis with checksums
+- Source file analysis (paths, sizes, domains)
 - Detailed batch structure with validation rules
 - Numbered execution phases with actions
 - Strict execution order
@@ -708,7 +704,6 @@ The file `[PROGRESS_FILE]` will be updated after each phase with:
 
 **Format**:
 - Valid JSON conforming to schema
-- All checksums calculated (SHA256)
 - All paths relative to workspace
 - ISO8601 timestamps
 - Deterministic ordering (alphabetical where applicable)
