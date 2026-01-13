@@ -34,6 +34,11 @@ Instructions for creating effective and maintainable prompt files that guide Git
 - Call out contextual variables such as `${selection}`, `${file}`, `${workspaceFolder}` only when they are essential, and describe how Copilot should interpret them.
 - Document how to proceed when mandatory context is missing (for example, “Request the file path and stop if it remains undefined”).
 
+### Avoid Invented Placeholders
+
+- Do NOT create new `${...}` placeholders to represent values that already exist in `.github/prompts.config`.
+- Example: use `OUTPUT_PATH` and `ENTRYPOINT` (with defaults) rather than introducing new placeholder variables.
+
 ## Tool and Permission Guidance
 - Limit `tools` to the smallest set that enables the task. List them in the preferred execution order when the sequence matters.
 - If the prompt inherits tools from a chat mode, mention that relationship and state any critical tool behaviours or side effects.

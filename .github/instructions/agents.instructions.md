@@ -16,6 +16,18 @@ Instructions for creating effective and maintainable custom agent files that pro
 - Purpose: Define specialized agents with tailored expertise, tools, and instructions for specific tasks
 - Official documentation: https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/create-custom-agents
 
+## Repository Configuration (TranscriptToDocumentation)
+
+When writing agents for this repository, configuration MUST be referenced via `.github/prompts.config` using its uppercase keys.
+
+- Use config keys directly in instructions: `OUTPUT_PATH`, `ENTRYPOINT`, `METADATA_FORMAT`, etc.
+- Do NOT invent variable placeholders (for example, a `docs_root`/`entrypoint` variable pair) for these values.
+- Only use `${...}` placeholders for VS Code-provided context variables when truly needed (e.g., `${selection}`, `${file}`), not for repository configuration.
+
+Examples:
+- ✅ Good: “Search in `OUTPUT_PATH/**/*.md` and start from `OUTPUT_PATH/ENTRYPOINT` (default: `SUMMARY.md`).”
+- ❌ Avoid: “Search in a derived `docs_root` variable and start from a derived `docs_root/entrypoint` path.”
+
 ## Required Frontmatter
 
 Every agent file must include YAML frontmatter with the following fields:
