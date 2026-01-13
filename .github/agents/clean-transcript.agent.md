@@ -2,7 +2,6 @@
 description: 'Automates cleaning and formatting of raw transcript files into structured markdown documents for knowledge base integration'
 name: 'Clean Transcript'
 tools: ['read', 'edit', 'search']
-model: 'Claude Sonnet 4.5'
 target: 'vscode'
 infer: true
 ---

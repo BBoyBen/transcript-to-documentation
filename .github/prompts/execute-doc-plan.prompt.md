@@ -198,8 +198,10 @@ Execute summary generation (standard for all plans):
 3. **Create the entrypoint file** (FROM conventions `entrypoint`) under [OUTPUT_PATH] with:
    - Project overview
    - Documentation structure
+   - Pages list (course order): every document link + title + topics + one-line description
    - Index by domain
-   - Index by topic
+   - Index by topic (A–Z): topic → list of documents
+   - Index by page title (A–Z): page → link + topics
    - Source mapping: each output document → its sources
    - A short "How to search" section for agents
 4. If conventions `create_module_readmes` is true: create `README.md` in each module folder listed in the plan under `logical_organization` → `modules`
@@ -247,6 +249,28 @@ Execute final validation (standard for all plans):
    ```
 
 3. **Continue to next phase** in execution_order
+   
+   ---
+   
+   ## Pages (Course Order)
+   
+   List EVERY generated document in pedagogical order. For each entry, include:
+   - Link (relative)
+   - Title
+   - Topics (from the document metadata; keep topic order alphabetical)
+   - One-line description (first sentence or a short summary)
+   
+   ---
+   
+   ## Pages (A–Z)
+   
+   List EVERY generated document sorted alphabetically by title (or file name if no title). Each entry MUST include the document topics.
+   
+   ---
+   
+   ## Topic Index (A–Z)
+   
+   List EVERY unique topic sorted A–Z. For each topic, list all documents that contain that topic.
    
    ---
    
@@ -368,7 +392,8 @@ Execute final validation (standard for all plans):
    ```
 
 4. **Quality Checklist for the entrypoint index file (`ENTRYPOINT`, expected `SUMMARY.md`)**:
-   - [ ] All documents listed with full paths and descriptions
+   - [ ] All documents listed with full paths, descriptions, and topics
+   - [ ] Complete A–Z page index (title → link + topics)
    - [ ] Complete alphabetical topic index with all topics
    - [ ] Document relationships and concept maps included
    - [ ] Search tips and metadata usage explained
@@ -392,8 +417,9 @@ Execute final validation (standard for all plans):
    - Correct language per config (LANGUAGE parameter)
    
 3. **Validate entrypoint index optimization**:
-   - [ ] Contains all required sections (Quick Navigation, By Domain, Topic Index, Relationships, Search Tips, Source mapping)
-   - [ ] All documents listed with descriptions
+   - [ ] Contains all required sections (Quick Navigation, By Domain, Pages, Topic Index, Relationships, Search Tips, Source mapping)
+   - [ ] All documents listed with descriptions and topics
+   - [ ] A–Z page index present
    - [ ] Complete alphabetical topic index (A-Z)
    - [ ] Document relationships and concept maps present
    - [ ] Search strategies for AI agents included
@@ -504,19 +530,21 @@ Execute final validation (standard for all plans):
    - [ ] Cross-reference report generated
    - [ ] Zero unresolved TBD markers in final files
    
-   **For Phase N+2 (Summary Generation)**:
+    **For Phase N+2 (Summary Generation)**:
     - [ ] SUMMARY.md created and accessible (or `ENTRYPOINT` if configured differently)
-   - [ ] Contains all required sections:
-     - [ ] Quick Navigation (table of contents)
-     - [ ] By Domain section with all documents
-     - [ ] Complete Topic Index (A-Z)
-     - [ ] Document Relationships
-     - [ ] Search Tips for AI Agents
-     - [ ] Source File Mapping
-   - [ ] All [N] documents listed with descriptions
-   - [ ] Complete alphabetical topic index
-   - [ ] Search strategies documented
-   - [ ] Optimized for AI semantic search
+    - [ ] Contains all required sections:
+       - [ ] Quick Navigation (table of contents)
+          - [ ] Pages (course order) with topics per page
+          - [ ] Pages (A–Z) index with topics per page
+       - [ ] By Domain section with all documents
+       - [ ] Complete Topic Index (A-Z)
+       - [ ] Document Relationships
+       - [ ] Search Tips for AI Agents
+       - [ ] Source File Mapping
+    - [ ] All [N] documents listed with descriptions and topics
+    - [ ] Complete alphabetical topic index
+    - [ ] Search strategies documented
+    - [ ] Optimized for AI semantic search
    
    **For Phase N+3 (Validation)**:
    - [ ] Validation report generated

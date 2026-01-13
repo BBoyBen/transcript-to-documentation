@@ -561,13 +561,15 @@ docs/
 1. Scan all generated documents
 2. Extract metadata (format depends on `METADATA_FORMAT` from `.github/prompts.config`)
 3. Create main entrypoint file `ENTRYPOINT` under `OUTPUT_PATH` with:
-   - Project overview
-   - Documentation structure
-   - Index by domain
-   - Index by topic
+  - Project overview
+  - Documentation structure
+  - Pages list (course order): every document link + title + topics + one-line description
+  - Index by domain
+  - Index by topic (A–Z): topic → list of documents
+  - Index by page title (A–Z): page → link + topics
   - Source mapping: each output document → its sources
   - A short "How to search" section for agents
-   - Navigation guide
+  - Navigation guide
 4. If `CREATE_MODULE_READMES` is `true`: create a `MODULE_README_NAME` inside each module folder listed in the plan under `logical_organization` → `modules` (use each module's `folder_path`)
 5. Update progress file
 

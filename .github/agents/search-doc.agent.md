@@ -2,7 +2,6 @@
 description: 'Search and response agent based on structured documentation'
 name: 'Search doc'
 tools: [read, search]
-model: 'Claude Sonnet 4.5'
 target: vscode
 infer: false
 ---
