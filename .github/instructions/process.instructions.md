@@ -19,8 +19,8 @@ Raw Transcripts → Cleaned Transcripts → Documentation → Search/Querying
 | **1. Preparation** | Raw recordings | Manual | `/transcripts/raw/` | Place raw transcripts |
 | **2. Cleaning** | `/transcripts/raw/` | `clean-transcript` | `/transcripts/clean/` | Transform into structured markdown |
 | **3. Validation** | `/transcripts/clean/` | Manual | ✓ Approved | Verify quality and completeness |
-| **4. Agent Generation** | `/transcripts/clean/` + config | `generic-doc-transformation-agent` | `create-docs.agent.md` | Create custom agent |
-| **5. Plan Generation** | `/transcripts/clean/` + config | `generate-doc-plan` | `temp/plan.md` | Generate complete execution plan |
+| **4. Plan Generation** | `/transcripts/clean/` + config | `generate-doc-plan` | `temp/plan.md` | Generate complete execution plan |
+| **5. Agent Generation** | `/transcripts/clean/` + config | `generic-doc-transformation-agent` | `create-docs.agent.md` | Create custom agent |
 | **6. Docs Creation** | `temp/plan.md` | `execute-doc-plan` | `/docs/` | Execute all phases sequentially |
 | **7. Querying** | `/docs/` | `search-doc` | Answers | Search and respond |
 
@@ -111,30 +111,7 @@ OUTPUT (clean):
 
 ---
 
-### Phase 4: Agent Generation (`generic-doc-transformation-agent`)
-
-**Objective**: Create a custom agent for documentation generation
-
-**Prompt**: `generic-doc-transformation-agent.prompt.md`
-
-**Input**: 
-- Source files in `/transcripts/clean/`
-- Configuration from `prompts.config`
-
-**Prompt Actions**:
-1. Read source structure
-2. Analyze domains and sections
-3. Read `prompts.config` for parameters
-4. Generate custom `create-docs` agent
-5. Adapt agent to your structure
-
-**Output**: `.github/agents/create-docs.agent.md` (custom)
-
-**Result**: Agent generated and ready for execution
-
----
-
-### Phase 5: Plan Generation (`generate-doc-plan`)
+### Phase 4: Plan Generation (`generate-doc-plan`)
 
 **Objective**: Create a complete execution plan for documentation transformation
 
@@ -173,6 +150,30 @@ temp/plan.md
 
 ---
 
+### Phase 5: Agent Generation (`generic-doc-transformation-agent`)
+
+**Objective**: Create a custom agent for documentation generation
+
+**Prompt**: `generic-doc-transformation-agent.prompt.md`
+
+**Input**: 
+- Source files in `/transcripts/clean/`
+- Configuration from `prompts.config`
+- Execution plan from `temp/plan.md` (generated in Phase 4)
+
+**Prompt Actions**:
+1. Read source structure
+2. Analyze domains and sections from plan
+3. Read `prompts.config` for parameters
+4. Generate custom `create-docs` agent adapted to plan structure
+5. Optimize agent based on batch grouping and execution plan
+
+**Output**: `.github/agents/create-docs.agent.md` (custom)
+
+**Result**: Agent generated and ready for execution with plan
+
+---
+
 ### Phase 6: Documentation Creation (`execute-doc-plan`)
 
 **Objective**: Execute the complete plan to transform all transcripts into documentation
@@ -180,8 +181,9 @@ temp/plan.md
 **Prompt**: `execute-doc-plan.prompt.md`
 
 **Input**: 
-- Execution plan from `temp/plan.md` (generated in Phase 5)
+- Execution plan from `temp/plan.md` (generated in Phase 4)
 - Source files in `/transcripts/clean/`
+- Custom agent from `create-docs.agent.md` (generated in Phase 5)
 
 **Prompt Actions** (sequential execution of all phases):
 
@@ -304,8 +306,8 @@ LANGUAGE: English
 ```
 
 **Impact**:
-- Phase 4: `generic-doc-transformation-agent` uses it to generate the agent
-- Phase 5: `create-prompt` uses it to calculate batches
+- Phase 4: `generate-doc-plan` uses it to analyze files and create plan
+- Phase 5: `generic-doc-transformation-agent` uses it to generate the agent
 - Phase 6: `create-docs` uses it to structure documentation
 - Phase 7: `search-doc` uses it to search in `OUTPUT_PATH`
 
@@ -316,16 +318,17 @@ LANGUAGE: English
 ```
 prompts.config (source of truth)
     ↓
-    ├→ Phase 4: generate create-docs agent
-    ├→ Phase 5: generate numbered prompts
-    │   ↓
-    │   └→ Phase 6: execute with these prompts
-    │       ↓
-    │       └→ /docs/ (final output)
-    │           ↓
-    │           └→ Phase 7: search-doc queries this
     ├→ Phase 2: clean-transcript transforms raw
-    └→ Phase 3: validate output
+    ├→ Phase 3: validate output
+    ├→ Phase 4: generate execution plan
+    │   ↓
+    │   └→ Phase 5: generate create-docs agent (adapted to plan)
+    │       ↓
+    │       └→ Phase 6: execute plan with agent
+    │           ↓
+    │           └→ /docs/ (final output)
+    │               ↓
+    │               └→ Phase 7: search-doc queries this
 ```
 
 ---
@@ -337,8 +340,8 @@ To confirm that each phase is completed:
 - [ ] **Phase 1**: `.transcript` files in `/transcripts/raw/`
 - [ ] **Phase 2**: `.md` files generated in `/transcripts/clean/`
 - [ ] **Phase 3**: Manual validation completed, quality ✓
-- [ ] **Phase 4**: `create-docs.agent.md` file generated
-- [ ] **Phase 5**: Numbered `.prompt.md` files in `.github/prompts/`
+- [ ] **Phase 4**: Execution plan generated in `temp/plan.md`
+- [ ] **Phase 5**: `create-docs.agent.md` file generated
 - [ ] **Phase 6**: Documentation generated in `/docs/`
 - [ ] **Phase 7**: Functional querying via `@search-doc`
 
@@ -350,13 +353,14 @@ To confirm that each phase is completed:
 
 **Option 1**: Improve cleaned transcripts
 1. Modify files in `/transcripts/clean/`
-2. Re-run Phase 5 (regenerate prompts)
-3. Re-run Phase 6 (regenerate docs)
+2. Re-run Phase 4 (regenerate plan)
+3. Re-run Phase 5 (regenerate agent)
+4. Re-run Phase 6 (regenerate docs)
 
 **Option 2**: Modify configuration
 1. Edit `.github/prompts.config`
-2. Re-run Phase 4 (regenerate agent)
-3. Re-run Phase 5 (regenerate prompts)
+2. Re-run Phase 4 (regenerate plan)
+3. Re-run Phase 5 (regenerate agent)
 4. Re-run Phase 6 (regenerate docs)
 
 **Option 3**: Fix directly
@@ -373,21 +377,21 @@ To confirm that each phase is completed:
 - **Output**: `/transcripts/clean/`
 - **Phase**: 2
 
-### For `generic-doc-transformation-agent`:
-- **Role**: Generate custom agent
+### For `generate-doc-plan`:
+- **Role**: Generate execution plan
 - **Input**: `/transcripts/clean/` + `prompts.config`
-- **Output**: `create-docs.agent.md`
+- **Output**: `temp/plan.md`
 - **Phase**: 4
 
-### For `create-prompt`:
-- **Role**: Generate execution prompts
-- **Input**: `/transcripts/clean/` + `prompts.config`
-- **Output**: `*.prompt.md` numbered
+### For `generic-doc-transformation-agent`:
+- **Role**: Generate custom agent
+- **Input**: `/transcripts/clean/` + `prompts.config` + `temp/plan.md`
+- **Output**: `create-docs.agent.md`
 - **Phase**: 5
 
 ### For `create-docs`:
 - **Role**: Generate documentation
-- **Input**: `/transcripts/clean/` + prompts
+- **Input**: `temp/plan.md` + `/transcripts/clean/`
 - **Output**: `/docs/`
 - **Phase**: 6
 
@@ -415,9 +419,9 @@ To confirm that each phase is completed:
 1. Prepare transcripts → /transcripts/raw/
 2. Execute @clean-transcript
 3. Verify quality
-4. Execute @generic-doc-transformation-agent
-5. Execute @create-prompt
-6. Execute @create-docs (with all prompts)
+4. Execute /generate-doc-plan
+5. Execute @generic-doc-transformation-agent
+6. Execute @create-docs /execute-doc-plan
 7. Use @search-doc to query
 ```
 
