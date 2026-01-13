@@ -19,10 +19,10 @@ Raw Transcripts → Cleaned Transcripts → Documentation → Search/Querying
 | **1. Preparation** | Raw recordings | Manual | `/transcripts/raw/` | Place raw transcripts |
 | **2. Cleaning** | `/transcripts/raw/` | `clean-transcript` | `/transcripts/clean/` | Transform into structured markdown |
 | **3. Validation** | `/transcripts/clean/` | Manual | ✓ Approved | Verify quality and completeness |
-| **4. Plan Generation** | `/transcripts/clean/` + config | `generate-doc-plan` | `temp/plan.md` | Generate complete execution plan |
+| **4. Plan Generation** | `/transcripts/clean/` + config | `generate-doc-plan` | `temp/plan.json` + `temp/plan.md` | Generate complete execution plan |
 | **5. Agent Generation** | `/transcripts/clean/` + config | `generic-doc-transformation-agent` | `create-docs.agent.md` | Create custom agent |
-| **6. Docs Creation** | `temp/plan.md` | `execute-doc-plan` | `/docs/` | Execute all phases sequentially |
-| **7. Querying** | `/docs/` | `search-doc` | Answers | Search and respond |
+| **6. Docs Creation** | `temp/plan.json` | `execute-doc-plan` | `OUTPUT_PATH/` | Execute all phases sequentially |
+| **7. Querying** | `OUTPUT_PATH/` | `search-doc` | Answers | Search and respond |
 
 ---
 
@@ -126,26 +126,28 @@ OUTPUT (clean):
 2. Scan and analyze all source files
 3. Create intelligent batch grouping (2-4 files per batch)
 4. Generate complete execution plan with all phases
-5. Calculate optimal execution order and timing
+5. Generate deterministic execution order
 
-**Output**: Structured plan file `temp/plan.md`
+**Output**: Structured plan files:
+- `temp/plan.json` (machine-readable, for execution)
+- `temp/plan.md` (human-readable, for review)
 
 **Result**: Plan ready for execution by `execute-doc-plan` prompt
 
 **Example plan structure**:
 ```
+temp/plan.json
+├── metadata
+├── config
+├── batches
+├── phases
+└── execution_order
+
 temp/plan.md
-├── Project Summary (statistics, domains, batches)
-├── Configuration (all parameters)
-├── Batch Structure (list of all batches with files)
-├── Execution Phases (detailed steps for each phase)
-│   ├── Phase 0: Initialization
-│   ├── Phase 1-N: Batch processing
-│   ├── Phase N+1: Cross-reference resolution
-│   ├── Phase N+2: Summary generation
-│   └── Phase N+3: Final validation
-├── Execution Order (strict sequential order)
-└── Progress Tracking (format and update strategy)
+├── Overview
+├── Batches (files per batch)
+├── Phases (actions + success criteria)
+└── Execution Order
 ```
 
 ---
@@ -159,7 +161,7 @@ temp/plan.md
 **Input**: 
 - Source files in `/transcripts/clean/`
 - Configuration from `prompts.config`
-- Execution plan from `temp/plan.md` (generated in Phase 4)
+- Execution plan from `temp/plan.json` + `temp/plan.md` (generated in Phase 4)
 
 **Prompt Actions**:
 1. Read source structure
@@ -181,7 +183,8 @@ temp/plan.md
 **Prompt**: `execute-doc-plan.prompt.md`
 
 **Input**: 
-- Execution plan from `temp/plan.md` (generated in Phase 4)
+- Execution plan from `temp/plan.json` (generated in Phase 4)
+- `temp/plan.md` (human-readable reference)
 - Source files in `/transcripts/clean/`
 - Custom agent from `create-docs.agent.md` (generated in Phase 5)
 
@@ -189,7 +192,7 @@ temp/plan.md
 
 1. **Phase 0: Initialization**:
    - Verify plan exists and is valid
-   - Create output folder structure in `/docs/`
+   - Create output folder structure in `OUTPUT_PATH/` (from `.github/prompts.config`)
    - Initialize progress tracking file
    - Validate all source files are accessible
 
@@ -210,9 +213,9 @@ temp/plan.md
 
 4. **Phase N+2: Summary Generation**:
    - Scan all generated documentation
-   - Create README.md with complete index and navigation
-   - Create SUMMARY.md with statistics
-   - Organize by domain and topic
+   - Create the single documentation entrypoint at `OUTPUT_PATH/ENTRYPOINT` (default: `OUTPUT_PATH/SUMMARY.md`)
+   - Ensure `ENTRYPOINT` contains navigation + topic index + page index + source mapping (docs ↔ sources)
+   - Optionally create per-module `README.md` files if `CREATE_MODULE_READMES` is enabled
    - Update progress file
 
 5. **Phase N+3: Final Validation**:
@@ -223,7 +226,7 @@ temp/plan.md
    - Generate validation report
    - Mark project as COMPLETE
 
-**Output**: Complete documentation in `/docs/`
+**Output**: Complete documentation in `OUTPUT_PATH/`
 
 **Additional Outputs**:
 - `temp/execution-report.md` - Detailed execution timeline
@@ -236,18 +239,20 @@ temp/plan.md
 - ✅ Can resume after interruption
 - ✅ Complete error handling
 
-**Output**: Structured documentation in `/docs/`
+**Output**: Structured documentation in `OUTPUT_PATH/`
 
 **Resulting structure**:
 ```
+# Example when OUTPUT_PATH=/docs and ENTRYPOINT=SUMMARY.md
 docs/
-├── summary.md
-├── domain1/
-│   ├── doc-KT_1.md
-│   └── doc-KT_2.md
-└── domain2/
-    ├── doc-KT_3.md
-    └── doc-KT_4.md
+├── SUMMARY.md
+├── Module_1/
+│   ├── README.md
+│   ├── 01_Topic_A.md
+│   └── 02_Topic_B.md
+└── Module_2/
+   ├── README.md
+   └── 01_Topic_C.md
 ```
 
 ---
@@ -258,7 +263,11 @@ docs/
 
 **Agent**: `search-doc.agent.md` (generic)
 
-**Input**: Documentation in `/docs/`
+**Input**: Documentation in `OUTPUT_PATH/`
+ 
+This agent MUST start from the entrypoint defined by `.github/prompts.config`:
+- Read `OUTPUT_PATH/ENTRYPOINT` (default: `OUTPUT_PATH/SUMMARY.md`)
+- Use it to locate relevant pages deterministically
 
 **Usage**:
 ```
@@ -269,11 +278,11 @@ docs/
 
 **Agent Actions**:
 1. Analyze the question
-2. Search in `/docs/`
-3. Find relevant documents
-4. Extract information
-5. Generate structured response
-6. Provide citations and sources
+2. Read `OUTPUT_PATH/ENTRYPOINT` and use it as the search entrypoint
+3. Search in `OUTPUT_PATH/` and follow the entrypoint navigation/indexes to locate relevant pages
+4. Extract information with citations
+5. If docs are insufficient: consult transcripts only as a last resort and only when the transcript sources are explicitly referenced by the docs (never scan all transcripts)
+6. Generate structured response
 
 **Responses**:
 - ✅ Based ONLY on documentation
@@ -326,7 +335,7 @@ prompts.config (source of truth)
     │       ↓
     │       └→ Phase 6: execute plan with agent
     │           ↓
-    │           └→ /docs/ (final output)
+   │           └→ OUTPUT_PATH/ (final output)
     │               ↓
     │               └→ Phase 7: search-doc queries this
 ```
@@ -340,9 +349,9 @@ To confirm that each phase is completed:
 - [ ] **Phase 1**: `.transcript` files in `/transcripts/raw/`
 - [ ] **Phase 2**: `.md` files generated in `/transcripts/clean/`
 - [ ] **Phase 3**: Manual validation completed, quality ✓
-- [ ] **Phase 4**: Execution plan generated in `temp/plan.md`
+- [ ] **Phase 4**: Execution plan generated in `temp/plan.json` + `temp/plan.md`
 - [ ] **Phase 5**: `create-docs.agent.md` file generated
-- [ ] **Phase 6**: Documentation generated in `/docs/`
+- [ ] **Phase 6**: Documentation generated in `OUTPUT_PATH/`
 - [ ] **Phase 7**: Functional querying via `@search-doc`
 
 ---
@@ -364,7 +373,7 @@ To confirm that each phase is completed:
 4. Re-run Phase 6 (regenerate docs)
 
 **Option 3**: Fix directly
-1. Edit files in `/docs/`
+1. Edit files in `OUTPUT_PATH/`
 2. Re-run Phase 7 (search-doc will read the modified files)
 
 ---
@@ -380,24 +389,24 @@ To confirm that each phase is completed:
 ### For `generate-doc-plan`:
 - **Role**: Generate execution plan
 - **Input**: `/transcripts/clean/` + `prompts.config`
-- **Output**: `temp/plan.md`
+- **Output**: `temp/plan.json` + `temp/plan.md`
 - **Phase**: 4
 
 ### For `generic-doc-transformation-agent`:
 - **Role**: Generate custom agent
-- **Input**: `/transcripts/clean/` + `prompts.config` + `temp/plan.md`
+- **Input**: `/transcripts/clean/` + `prompts.config` + `temp/plan.json` + `temp/plan.md`
 - **Output**: `create-docs.agent.md`
 - **Phase**: 5
 
 ### For `create-docs`:
 - **Role**: Generate documentation
-- **Input**: `temp/plan.md` + `/transcripts/clean/`
-- **Output**: `/docs/`
+- **Input**: `temp/plan.json` + `/transcripts/clean/`
+- **Output**: `OUTPUT_PATH/`
 - **Phase**: 6
 
 ### For `search-doc`:
 - **Role**: Query documentation
-- **Input**: `/docs/`
+- **Input**: `OUTPUT_PATH/` and `OUTPUT_PATH/ENTRYPOINT`
 - **Output**: Structured responses
 - **Phase**: 7
 

@@ -126,7 +126,7 @@ BATCH_SIZE: 2-4
 - Transforms them into structured documentation
 - Organizes by domains and topics
 - Generates with metadata (Topics, Related, Source)
-- Output: Structured markdown documents in `/docs`
+- Output: Structured markdown documents in `OUTPUT_PATH/` (from `.github/prompts.config`)
 - **Status**: Created during process (not a prerequisite)
 
 #### `search-doc.agent.md`
@@ -146,7 +146,7 @@ BATCH_SIZE: 2-4
 - Creates comprehensive execution plan
 - Groups files into logical batches (2-4 files per batch)
 - Defines all phases (init, batches, cross-refs, summary, validation)
-- Output: Complete plan in `temp/plan.md`
+- Output: Complete plan in `temp/plan.json` + `temp/plan.md`
 - Features: Progress tracking format, success criteria, timing estimates
 - **Phase**: 4 (runs after transcripts are cleaned and validated)
 
@@ -161,12 +161,12 @@ BATCH_SIZE: 2-4
 
 #### `execute-doc-plan.prompt.md`
 **Role**: Plan executor agent
-- Reads and executes plan from `temp/plan.md`
+- Reads and executes plan from `temp/plan.json` (with `temp/plan.md` as human-readable reference)
 - Manages all phases automatically without pauses
 - Tracks progress continuously
 - Performs detailed validation at each phase
-- Output: Complete documentation in `/docs/` with quality reports
-- Features: Automatic resumption, comprehensive error handling, detailed metrics
+- Output: Complete documentation in `OUTPUT_PATH/` (from `.github/prompts.config`)
+- Features: Automatic resumption, comprehensive error handling, and phase-by-phase validation
 
 ### Instructions (`.github/instructions/`)
 
@@ -208,8 +208,8 @@ Centralized YAML file containing:
 - `LANGUAGE`: Language (e.g., English)
 - `DOMAINS`: Main domains/topics
 - `BATCH_SIZE`: Files per batch (2-4)
-- `MODEL`: AI model (Claude Sonnet 4.5)
-- `TOOLS`: Available tools (read, search)
+- `TARGET`: Execution environment (e.g., `vscode`)
+- `TOOLS`: Available tools (e.g., `read`, `edit`, `search`)
 
 ### Folders
 
@@ -229,7 +229,7 @@ Centralized YAML file containing:
 - **Contains**: Final generated documentation
 - **Structure**: Organized by domains and hierarchical sub-folders
 - **Format**: Markdown with metadata
-- **Role**: Documentation destination
+- **Role**: Documentation destination (defaults to `/docs/` when `OUTPUT_PATH: /docs`)
 - **Flexibility**: Agent automatically creates sub-folders as needed for optimal documentation hierarchy (not limited to domain folders, can create up to 4 nesting levels)
 
 #### `temp/`
@@ -247,11 +247,11 @@ Centralized YAML file containing:
 ```mermaid
 graph LR
     A["Raw Transcripts<br/>/transcripts/raw"] -->|"@clean-transcript"| B["Cleaned Transcripts<br/>/transcripts/clean"]
-    B -->|"/generate-doc-plan"| D["Plan Generated<br/>temp/plan.md"]
+  B -->|"/generate-doc-plan"| D["Plan Generated<br/>temp/plan.json + temp/plan.md"]
     D -->|"@generic-doc-transformation-agent"| C["Agent Created<br/>create-docs.agent.md"]
     C -->|"executes"| E["@create-docs<br/>/execute-doc-plan"]
     D -->|"guides"| E
-    E -->|"produces"| F["Documentation<br/>/docs"]
+  E -->|"produces"| F["Documentation<br/>OUTPUT_PATH"]
     F -->|"@search-doc"| G["Answers"]
 ```
 
@@ -320,9 +320,8 @@ transcripts/clean/
    ```
 2. Prompt analyzes source files and creates complete plan
 
-**Output**: Complete execution plan in `temp/plan.md`
-- Project summary with statistics
-- Batch structure with file groupings
+**Output**: Complete execution plan in `temp/plan.json` + `temp/plan.md`
+- Deterministic batch structure with file groupings
 - All execution phases (init + batches + cross-refs + summary + validation)
 - Strict execution order
 - Progress tracking format
@@ -363,10 +362,10 @@ transcripts/clean/
 
 3. Progress is tracked continuously with updates
 
-**Output**: Complete documentation in `/docs/`
+**Output**: Complete documentation in `OUTPUT_PATH/`
 - Structured markdown files with metadata
-- README.md with full index and navigation
-- SUMMARY.md with statistics
+- `OUTPUT_PATH/ENTRYPOINT` (default: `OUTPUT_PATH/SUMMARY.md`) as the single documentation entrypoint
+- Entry point includes pages (course order) with topics + description, plus A–Z indexes (pages + topics) and source mapping
 - All cross-references resolved
 - Validation report confirming completion
 - **Hierarchical structure**: Agent creates sub-folders as needed (up to 4 nesting levels) for optimal documentation organization beyond domain-level grouping
@@ -494,9 +493,9 @@ Agents and prompts reading from `prompts.config` automatically adapt:
 | 1 | Manual | Add transcripts | `/transcripts/raw/` |
 | 2 | @clean-transcript | Clean transcripts | `/transcripts/clean/` |
 | 3 | Manual | Verify quality | ✓ Validation |
-| 4 | /generate-doc-plan | Generate plan | `temp/plan.md` |
+| 4 | /generate-doc-plan | Generate plan | `temp/plan.json` + `temp/plan.md` |
 | 5 | @generic-doc-transformation-agent | Generate agent | `create-docs.agent.md` |
-| 6 | @create-docs /execute-doc-plan | Execute plan | `/docs/` |
+| 6 | @create-docs /execute-doc-plan | Execute plan | `OUTPUT_PATH/` |
 | 7 | @search-doc | Query docs | Answers |
 
 ---
@@ -509,7 +508,7 @@ Agents and prompts reading from `prompts.config` automatically adapt:
 A: Verify that `/transcripts/clean/` contains files and that `OUTPUT_PATH` exists in `prompts.config`
 
 **Q: Search returns no results**
-A: Ensure documentation was generated in `/docs/` and that `summary.md` file exists
+A: Ensure documentation was generated in `OUTPUT_PATH/` and that the entrypoint exists at `OUTPUT_PATH/ENTRYPOINT` (default: `OUTPUT_PATH/SUMMARY.md`)
 
 **Q: How do I add new domains?**
 A: Edit `DOMAINS` in `.github/prompts.config` and re-run agents
