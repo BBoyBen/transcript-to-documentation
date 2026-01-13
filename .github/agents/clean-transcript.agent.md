@@ -2,6 +2,7 @@
 description: 'Automates cleaning and formatting of raw transcript files into structured markdown documents for knowledge base integration'
 name: 'Clean Transcript'
 tools: ['read', 'edit', 'search']
+model: 'Claude Sonnet 4.5'
 target: 'vscode'
 infer: true
 ---
@@ -65,7 +66,22 @@ For each transcript file (or file part):
 ### 3. Final Markdown File Structure
 
 ```markdown
-# Title: [Name of KT]
+---
+title: "[Name of KT]"
+doc_type: transcript
+topics:
+  - "Topic 1"
+  - "Topic 2"
+related:
+  - "../docs/[relative-link-if-known].md"
+sources:
+  - "transcripts/raw/[path]/[file].transcript"
+generated_at: "[ISO8601 timestamp]"
+---
+
+**Topics**: Topic 1; Topic 2; Topic 3
+**Related**: ../docs/[relative-link-if-known].md
+**Source**: transcripts/raw/[path]/[file].transcript
 
 **Domain**: [Domain according to DOMAINS]  
 **Type**: Training / Knowledge Transfer  
@@ -115,7 +131,7 @@ For each transcript file (or file part):
 
 **Example with configuration**:
 ```yaml
-# In prompts.config
+# In .github/prompts.config
 SOURCE_PATHS:
   - /transcripts/raw/domain1
   - /transcripts/raw/domain2
@@ -143,7 +159,7 @@ Process file: /transcripts/raw/[path]/[KT_X.transcript]
 Process domain: [domain-name-from-config]
 ```
 
-### Process all transcripts (uses prompts.config)
+### Process all transcripts (uses .github/prompts.config)
 ```
 Process all transcripts
 ```

@@ -1,6 +1,5 @@
 ---
 description: 'Generates a complete execution plan for documentation transformation'
-usage: 'Analyzes source files and creates a detailed plan.md in temp/ with all execution phases'
 tools: ['read', 'edit', 'search']
 ---
 
@@ -27,6 +26,18 @@ The plan includes all execution phases: initialization, batch processing, cross-
   - The plan must be deterministic (same inputs → same plan)
   - Must be executable sequentially by `execute-doc-plan.prompt.md`
 
+## Documentation Conventions (from `.github/prompts.config`)
+
+These conventions MUST be read from `.github/prompts.config` (same format as the rest of the configuration).
+
+- `OUTPUT_PATH`: Documentation root folder.
+- `ENTRYPOINT` (default: `SUMMARY.md`): Single documentation entrypoint created under `OUTPUT_PATH`. This file MUST contain everything a search agent needs (navigation + topic index + source mapping).
+- `METADATA_FORMAT` (default: `both`): `yaml-frontmatter` | `bold-lines` | `both`.
+- `CREATE_MODULE_READMES` (default: `true`): `true` to create per-module `README.md` indexes.
+- `PREFER_SHORT_DOCS` (default: `true`): `true` to allow splitting long docs into smaller, retrieval-friendly docs.
+- `SPLIT_THRESHOLD_LINES` (default: `1000`): Line threshold for splitting (plan-time only).
+- `MODULE_README_NAME` (default: `README.md`): File name for per-module index files.
+
 ## Workflow
 
 ### Step 1: Reading Configuration
@@ -41,6 +52,10 @@ The plan includes all execution phases: initialization, batch processing, cross-
    - DOMAINS (if defined, otherwise auto-detection)
    - SPECIAL_REQUIREMENTS, ADDITIONAL_FEATURES
 3. Validate that all required parameters are present
+
+4. Derive documentation conventions deterministically:
+  - `docs_root` MUST be `OUTPUT_PATH` from `.github/prompts.config`
+  - `entrypoint`, `metadata_format`, `create_module_readmes`, `prefer_short_docs`, `split_threshold_lines`, `module_readme_name` come from `.github/prompts.config` (use defaults if missing)
 
 ### Step 2: Analysis of Source Files
 
@@ -138,6 +153,29 @@ The plan includes all execution phases: initialization, batch processing, cross-
 
 **Output**: Deterministic batch structure with checksums
 
+### Step 3ter: Retrieval-Friendly Splitting (Deterministic)
+
+**Applies only if** `PREFER_SHORT_DOCS` is `true` in `.github/prompts.config`.
+
+**Goal**: Allow the plan to create multiple smaller output docs when a planned document would be too large.
+
+**Deterministic rule**:
+
+1. For each planned output document listed in the plan under `logical_organization` → `structure` → `sections` → `files`, compute `estimated_line_count` as the sum of line counts of its `source_files` (use exact source line counts).
+2. If `estimated_line_count` > `split_threshold_lines` (default 1000): split into:
+  - 1 overview file (keeps the original `output_file` name and ordering)
+  - 2 to 6 sub-documents, created by grouping source content in a stable order
+3. Stable grouping order:
+  - Sort `source_files` alphabetically
+  - Within each source file, split by H2 headings (`## `) boundaries
+  - Group consecutive H2 sections until the next group would exceed `ceil(estimated_line_count / target_parts)`
+  - `target_parts` is deterministically chosen as `min(6, max(2, ceil(estimated_line_count / split_threshold_lines)))`
+4. For each sub-document:
+  - Add it as an additional entry in the same section `files[]` list with the next ordering number
+  - Use the same folder_path as the overview doc
+  - Add `related` links between overview ↔ subdocs (relative paths)
+5. The executor MUST create exactly the files listed in the plan (no additional splitting during execution).
+
 ### Step 4: Generation of Complete Plan (JSON + Markdown)
 
 #### Step 4A: Generate `temp/plan.json` (Machine-Readable)
@@ -167,7 +205,16 @@ Create a structured JSON file with the following schema:
     "progress_file": "PROGRESS_FILE from config",
     "domains": ["array from DOMAINS or auto-detected"],
     "special_requirements": ["from config if present"],
-    "additional_features": ["from config if present"]
+    "additional_features": ["from config if present"],
+    "documentation_conventions": {
+      "docs_root": "OUTPUT_PATH from .github/prompts.config",
+      "entrypoint": "ENTRYPOINT from .github/prompts.config (default: SUMMARY.md)",
+      "metadata_format": "METADATA_FORMAT from .github/prompts.config (default: both)",
+      "create_module_readmes": "CREATE_MODULE_READMES from .github/prompts.config (default: true)",
+      "prefer_short_docs": "PREFER_SHORT_DOCS from .github/prompts.config (default: true)",
+      "split_threshold_lines": "SPLIT_THRESHOLD_LINES from .github/prompts.config (default: 1000)",
+      "module_readme_name": "MODULE_README_NAME from .github/prompts.config (default: README.md)"
+    }
   },
   
   "source_analysis": {
@@ -213,6 +260,15 @@ Create a structured JSON file with the following schema:
         ]
       }
     ],
+    "modules": [
+      {
+        "module_id": "MODULE_001",
+        "module_name": "Descriptive Module Name",
+        "folder_path": "docs/01_Module_Name",
+        "readme_path": "docs/01_Module_Name/README.md",
+        "description": "Module purpose and learning objectives"
+      }
+    ],
     "naming_rules": {
       "use_prefixes": "01_, 02_, 03_ for ordering",
       "use_descriptive_names": "Based on content, not source",
@@ -238,7 +294,10 @@ Create a structured JSON file with the following schema:
         "min_topics": 3,
         "max_topics": 7,
         "heading_levels": {"min": 2, "max": 4},
+        "metadata_format": "METADATA_FORMAT from .github/prompts.config (default: both)",
         "require_metadata": ["Topics", "Related", "Source"],
+        "yaml_frontmatter_fields": ["title", "topics", "related", "sources", "generated_at", "doc_type"],
+        "bold_line_fields": ["Topics", "Related", "Source"],
         "cross_ref_marker": "TBD",
         "language": "from config",
         "tone": "from config",
@@ -369,7 +428,7 @@ Create a markdown file for human review with the following structure:
 
 ## Configuration
 
-[Copy of key parameters from prompts.config]
+[Copy of key parameters from .github/prompts.config]
 
 ## Pedagogical Course Structure
 
@@ -378,7 +437,7 @@ Create a markdown file for human review with the following structure:
 ### Course Organization
 
 The documentation will be organized as:
-```
+
 docs/
 ├── 01_Foundational_Concepts/
 │   ├── 01_Core_Topic.md
@@ -390,7 +449,6 @@ docs/
 └── 03_Advanced_Topics/
     ├── 01_Expert_Concepts.md
     └── ...
-```
 
 ### Naming Convention
 
@@ -505,19 +563,21 @@ docs/
 
 **Actions**:
 1. Scan all generated documents
-2. Extract metadata (Topics, Related, Source)
-3. Create main README.md file with:
+2. Extract metadata (format depends on `METADATA_FORMAT` from `.github/prompts.config`)
+3. Create main entrypoint file `ENTRYPOINT` under `OUTPUT_PATH` with:
    - Project overview
    - Documentation structure
    - Index by domain
    - Index by topic
+  - Source mapping: each output document → its sources
+  - A short "How to search" section for agents
    - Navigation guide
-4. Create SUMMARY.md file with statistics
+4. If `CREATE_MODULE_READMES` is `true`: create a `MODULE_README_NAME` inside each module folder listed in the plan under `logical_organization` → `modules` (use each module's `folder_path`)
 5. Update progress file
 
 **Success Criteria**:
-- README.md created with complete index
-- SUMMARY.md with statistics
+- Entrypoint created with complete index
+- Module README.md files created when enabled
 - All documents listed and categorized
 - Progress updated with "SUMMARY_COMPLETE" status
 
@@ -848,7 +908,7 @@ The progress file allows:
 ## Maintenance
 
 This prompt must be updated if:
-- The format of `prompts.config` changes
+- The format of `.github/prompts.config` changes
 - New phases are added to workflow
 - Quality requirements evolve
 - Output format changes

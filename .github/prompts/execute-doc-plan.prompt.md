@@ -1,6 +1,5 @@
 ---
 description: 'Executes sequentially all phases of the documentation plan from temp/plan.md'
-usage: 'Reads the generated plan and executes each phase in order, with progress tracking'
 tools: ['read', 'edit', 'search']
 ---
 
@@ -24,6 +23,21 @@ Execute the deterministic documentation transformation plan from `temp/plan.json
   - Stop on error and request manual fix
   - Update progress after each phase
 
+## Documentation Conventions (Resolved Deterministically)
+
+The executor MUST resolve documentation conventions using this strict precedence order:
+
+1. If the plan includes a `config` → `documentation_conventions` block: use it.
+2. Else: read values from `.github/prompts.config` (use defaults if missing).
+
+Config variables (fallback only, from `.github/prompts.config`):
+
+- `OUTPUT_PATH`: Documentation root folder.
+- `ENTRYPOINT` (default: `SUMMARY.md`): Single entrypoint file under `OUTPUT_PATH` for both humans and agents.
+- `METADATA_FORMAT` (default: `both`): `yaml-frontmatter` | `bold-lines` | `both`.
+- `CREATE_MODULE_READMES` (default: `true`): If `true`, create per-module `README.md` files.
+- `PREFER_SHORT_DOCS` (default: `true`): If `true`, allow splitting long docs when plan specifies it.
+
 ## Main Workflow
 
 ### Step 0: Load and Validate Plan
@@ -40,8 +54,8 @@ Execute the deterministic documentation transformation plan from `temp/plan.json
    - Confirm execution_order is sequential
 
 3. **Extract plan configuration**:
-   - Load plan.metadata (project name, plan version, generated date)
-   - Load plan.config (language, tone, batch_size, output_path, etc.)
+   - Load the plan `metadata` block (project name, plan version, generated date)
+   - Load the plan `config` block (language, tone, batch_size, output_path, etc.)
    - Count batches and phases
    - Get execution_order list
 
@@ -49,8 +63,8 @@ Execute the deterministic documentation transformation plan from `temp/plan.json
    ```
    📋 EXECUTION PLAN LOADED
    
-   Project: [FROM plan.config.project_name]
-   Plan Version: [FROM plan.metadata.plan_version]
+   Project: [FROM plan config: project_name]
+   Plan Version: [FROM plan metadata: plan_version]
    
    Phases to execute:
    - Phase 0: Initialization
@@ -59,21 +73,21 @@ Execute the deterministic documentation transformation plan from `temp/plan.json
    - Phase N+2: Summary Generation
    - Phase N+3: Final Validation
    
-   Total estimated time: ~[FROM plan.estimated_time.total_minutes] minutes
+   Total estimated time: ~[FROM plan estimated_time: total_minutes] minutes
    
-   Progress file: [FROM plan.config.progress_file]
+   Progress file: [FROM plan config: progress_file]
    ```
 
-5. **Automatically start execution** of all phases in plan.execution_order
+5. **Automatically start execution** of all phases in the plan execution_order
 
 ### Step 1: Sequential Phase Execution
 
-For each phase in `plan.execution_order`:
+For each phase_id in the plan execution_order:
 
 #### 1.1 Phase Preparation
 
 1. **Read phase from plan.json**:
-   - Find phase in plan.phases by phase_id
+   - Find phase in the plan phases list by phase_id
    - Extract: phase_name, phase_type, actions, success_criteria, depends_on
    - Verify dependencies are complete (depends_on phases)
 
@@ -96,14 +110,14 @@ For each phase in `plan.execution_order`:
 
 **For Phase Type: init**
 
-Execute all actions from plan.phases[0].actions:
+Execute all actions from the init phase actions list in the plan:
 
-1. **Create progress tracking file** (FROM plan.config.progress_file):
+1. **Create progress tracking file** (FROM plan config: progress_file):
    - File location and initial content from plan
    - Initialize with project metadata
    - Mark Phase 0 as IN_PROGRESS
 
-2. **Create output folder structure** (FROM plan.config.output_path and domains):
+2. **Create output folder structure** (FROM plan config: output_path and domains):
    - Create main directory: [OUTPUT_PATH]
    - Create subdirectories for each domain
    - Ensure all paths are accessible and writable
@@ -115,15 +129,15 @@ Execute all actions from plan.phases[0].actions:
    - Configuration valid
 
 **Success Criteria for Phase 0** (FROM plan):
-- ✅ [Each criterion from plan.phases[0].success_criteria]
+- ✅ [Each criterion from the init phase success_criteria in the plan]
 
 ---
 
 **For Phase Type: batch**
 
-Execute all actions from corresponding plan.batches phase:
+Execute all actions from the corresponding batch phase in the plan:
 
-1. **Load batch specification** (FROM plan.batches[batch_id]):
+1. **Load batch specification** (FROM the plan batch matching this phase's batch_id):
    - Get batch_id, files list
    - Get transformation_rules (extract_topics, heading_levels, require_metadata, etc.)
    - Get validation_criteria (measurable success metrics)
@@ -135,17 +149,20 @@ Execute all actions from corresponding plan.batches phase:
 
 3. **Apply transformation rules** (EXACT from batch.transformation_rules):
    - **Topics extraction**: Extract [min_topics]-[max_topics] topics per document
-   - **Metadata**: Include all [require_metadata] fields
+   - **Metadata**: Render metadata using `METADATA_FORMAT` (from conventions)
+     - If `yaml-frontmatter`: prepend YAML frontmatter with `title`, `topics` (list), `related` (list of relative links), `sources` (list), `generated_at` (ISO8601), `doc_type` (concept|guide|process|reference)
+     - If `bold-lines`: include bold lines `**Topics**: ...`, `**Related**: ...`, `**Source**: ...`
+     - If `both`: include YAML frontmatter AND the bold lines (retro compatibility)
    - **Structure**: Use heading levels [min]-[max] only
    - **Cross-references**: Mark references with [cross_ref_marker]
-   - **Language**: Apply [language] from plan.config
-   - **Tone**: Apply [tone] from plan.config
+   - **Language**: Apply [language] from the plan config
+   - **Tone**: Apply [tone] from the plan config
 
 4. **Create output files** (TO batch.files[].expected_output_path):
    - Generate markdown files with metadata section
    - Ensure hierarchical structure matches rules
    - Use TBD markers for cross-batch references
-   - One file per source file
+   - Create exactly the output files listed in the plan (one or many per source file, as specified)
 
 5. **Validate batch output** (AGAINST batch.validation_criteria):
    - Check: [Each criterion from batch.validation_criteria]
@@ -153,7 +170,7 @@ Execute all actions from corresponding plan.batches phase:
    - If any criterion fails, stop and report error
 
 **Success Criteria for Batch Phase** (FROM plan):
-- ✅ [Each criterion from plan.phases[n].success_criteria]
+- ✅ [Each criterion from the current phase success_criteria in the plan]
 
 ---
 
@@ -162,7 +179,7 @@ Execute all actions from corresponding plan.batches phase:
 Execute cross-reference resolution (standard for all plans):
 
 1. **Scan all generated files** in [OUTPUT_PATH]
-2. **Identify all TBD markers** (FROM plan.batches[].transformation_rules.cross_ref_marker)
+2. **Identify all TBD markers** (use the cross-ref marker value defined in each batch's plan data: `transformation_rules` → `cross_ref_marker`)
 3. **For each TBD marker**:
    - Locate target document in OUTPUT_PATH
    - Create correct relative link
@@ -177,14 +194,16 @@ Execute cross-reference resolution (standard for all plans):
 Execute summary generation (standard for all plans):
 
 1. **Scan all generated documents** in [OUTPUT_PATH]
-2. **Extract metadata** (Topics, Related, Source from each document)
-3. **Create README.md** with:
+2. **Extract metadata** (format depends on conventions)
+3. **Create the entrypoint file** (FROM conventions `entrypoint`) under [OUTPUT_PATH] with:
    - Project overview
    - Documentation structure
    - Index by domain
    - Index by topic
-4. **Create SUMMARY.md** with statistics
-5. **Success**: Both files created and indexed
+   - Source mapping: each output document → its sources
+   - A short "How to search" section for agents
+4. If conventions `create_module_readmes` is true: create `README.md` in each module folder listed in the plan under `logical_organization` → `modules`
+5. **Success**: Entrypoint and optional module indexes created and indexed
 
 ---
 
@@ -204,9 +223,9 @@ Execute final validation (standard for all plans):
    - Hierarchical structure correct (heading levels)
 
 3. **Verify requirements**:
-   - Language: [FROM plan.config.language]
-   - Tone: [FROM plan.config.tone]
-   - All [special_requirements] from plan.config met
+   - Language: [FROM plan config: language]
+   - Tone: [FROM plan config: tone]
+   - All [special_requirements] from the plan config met
 
 4. **Success**: All checks pass
 
@@ -301,7 +320,7 @@ Execute final validation (standard for all plans):
    
    All documents follow these standards:
    - **Structure**: 2-4 heading levels maximum
-   - **Metadata**: Topics, Related, Source always present
+   - **Metadata**: Rendered per conventions `METADATA_FORMAT` (YAML frontmatter and/or bold lines)
    - **Links**: Relative paths for portability
    - **Language**: [LANGUAGE from config]
    - **Optimization**: Structured for AI semantic search
@@ -321,7 +340,7 @@ Execute final validation (standard for all plans):
    *This summary is automatically maintained. For questions or updates, regenerate documentation.*
    ```
 
-3. **Create optional README.md** in OUTPUT_PATH (if helpful for human navigation):
+3. **Create optional entrypoint** in OUTPUT_PATH (if helpful for human navigation):
    ```markdown
    # [PROJECT_NAME]
    
@@ -330,30 +349,29 @@ Execute final validation (standard for all plans):
    ## Start Here
    
    - **New to the project?** → Start with [Core Concepts]
-   - **Looking for something specific?** → See [summary.md](summary.md)
+   - **Looking for something specific?** → See the entrypoint index (`ENTRYPOINT`, expected `SUMMARY.md`)
    - **Want to search?** → Use @search-doc agent
    
    ## Quick Links
    
-   - [Complete Documentation Index](summary.md)
-   - [Domain 1 Overview](domain1/overview.md)
-   - [Domain 2 Overview](domain2/overview.md)
+      - Complete Documentation Index: `ENTRYPOINT` (expected `SUMMARY.md`)
+    - Domain 1 Overview: `domain1/overview.md`
+    - Domain 2 Overview: `domain2/overview.md`
    
    ## Using This Documentation
    
    ### For Humans
-   Navigate through domains or use the topic index in summary.md
+   Navigate through modules/domains or use the topic index in `ENTRYPOINT`
    
    ### For AI Agents
-   Start with summary.md for optimal search results
+   Start with `ENTRYPOINT` (expected `SUMMARY.md`) for optimal search results
    ```
 
-4. **Quality Checklist for summary.md**:
+4. **Quality Checklist for the entrypoint index file (`ENTRYPOINT`, expected `SUMMARY.md`)**:
    - [ ] All documents listed with full paths and descriptions
    - [ ] Complete alphabetical topic index with all topics
    - [ ] Document relationships and concept maps included
    - [ ] Search tips and metadata usage explained
-   - [ ] Statistics comprehensive and accurate
    - [ ] Source mapping complete
    - [ ] Language matches config (LANGUAGE parameter)
    - [ ] Optimized for AI semantic search
@@ -373,14 +391,13 @@ Execute final validation (standard for all plans):
    - Hierarchical structure respected (2-4 levels)
    - Correct language per config (LANGUAGE parameter)
    
-3. **Validate summary.md optimization**:
-   - [ ] Contains all required sections (Quick Navigation, By Domain, Topic Index, Relationships, Search Tips, Statistics)
+3. **Validate entrypoint index optimization**:
+   - [ ] Contains all required sections (Quick Navigation, By Domain, Topic Index, Relationships, Search Tips, Source mapping)
    - [ ] All documents listed with descriptions
    - [ ] Complete alphabetical topic index (A-Z)
    - [ ] Document relationships and concept maps present
    - [ ] Search strategies for AI agents included
    - [ ] Metadata usage guide present
-   - [ ] Statistics accurate and complete
    - [ ] Source file mapping complete
    - [ ] Optimized for semantic search by AI agents
    - [ ] Language consistent throughout
@@ -488,14 +505,13 @@ Execute final validation (standard for all plans):
    - [ ] Zero unresolved TBD markers in final files
    
    **For Phase N+2 (Summary Generation)**:
-   - [ ] summary.md created and accessible
+    - [ ] SUMMARY.md created and accessible (or `ENTRYPOINT` if configured differently)
    - [ ] Contains all required sections:
      - [ ] Quick Navigation (table of contents)
      - [ ] By Domain section with all documents
      - [ ] Complete Topic Index (A-Z)
      - [ ] Document Relationships
      - [ ] Search Tips for AI Agents
-     - [ ] Statistics section
      - [ ] Source File Mapping
    - [ ] All [N] documents listed with descriptions
    - [ ] Complete alphabetical topic index
@@ -713,12 +729,10 @@ Execute final validation (standard for all plans):
    
    ### Index and Search Files
    
-   - **summary.md**: Comprehensive documentation index optimized for AI search
-     - Documents indexed: [N]
-     - Topics catalogued: [N]
-     - Sections: Quick Navigation, By Domain, Topic Index A-Z, Relationships, Search Tips, Statistics, Source Mapping
-   
-   - **README.md**: Navigation guide for humans
+      - **Entrypoint file** (from conventions `entrypoint`): Comprehensive documentation index optimized for AI search
+       - Documents indexed: [N]
+       - Topics catalogued: [N]
+       - Sections: Quick Navigation, By Domain, Topic Index A-Z, Relationships, Search Tips, Source Mapping
    
    ### Metadata and Tracking Files
    
@@ -790,7 +804,7 @@ Execute final validation (standard for all plans):
    - ✅ Bidirectional relationships created
    
    ### Search Optimization
-   - ✅ summary.md comprehensive and well-structured
+      - ✅ Entrypoint index comprehensive and well-structured
    - ✅ All documents have clear, searchable metadata
    - ✅ Topic index complete (A-Z)
    - ✅ Document relationships enable AI discovery
@@ -818,14 +832,14 @@ Execute final validation (standard for all plans):
    @search-doc Explain [concept]
    ```
    
-   The agent will search summary.md and guide you to relevant documents.
+   The agent will start from the entrypoint index (ENTRYPOINT, expected `SUMMARY.md`) and guide you to relevant documents.
    
    ### 📚 Manual Navigation
    
-   - **For humans**: Start with [summary.md](../[OUTPUT_PATH]/summary.md) or README.md
-   - **For AI agents**: Start with [summary.md](../[OUTPUT_PATH]/summary.md) for optimal search
+   - **For humans**: Start with the entrypoint index (ENTRYPOINT, expected `SUMMARY.md`)
+   - **For AI agents**: Start with the entrypoint index (ENTRYPOINT, expected `SUMMARY.md`) for optimal search
    - **By domain**: Navigate domain folders in `[OUTPUT_PATH]`
-   - **By topic**: Use the complete topic index in summary.md
+   - **By topic**: Use the complete topic index in the entrypoint index
    
    ### 🤖 Integrate with Other Systems
    
@@ -929,14 +943,14 @@ Execute final validation (standard for all plans):
    
    📄 Generated reports:
    - Execution report: temp/execution-report.md
-   - Documentation summary: [OUTPUT_PATH]/SUMMARY.md
+   - Entrypoint index: [OUTPUT_PATH]/[entrypoint file from conventions]
    - Validation: temp/validation-report.md
    
    ✅ All phases completed successfully
    ✅ Documentation ready for use
    
    🎯 Possible next actions:
-   - Review: [OUTPUT_PATH]/README.md
+   - Review: [OUTPUT_PATH]/[entrypoint file from conventions]
    - Search: @search-doc "your query"
    - Validate: Read temp/validation-report.md
    ```
@@ -1021,8 +1035,8 @@ The prompt will:
 
 **Documentation** (in OUTPUT_PATH):
 - All transformed documentation files
-- README.md with index and navigation
-- SUMMARY.md with statistics
+- Entrypoint file (from conventions `entrypoint`) with index and navigation
+
 
 **Tracking** (in temp/):
 - Progress file (per config)
@@ -1048,7 +1062,7 @@ Structured content...
 Details...
 
 ## Section 2
-[Reference to other document](../path/to/doc.md)
+Reference to other document: `../path/to/doc.md`
 ```
 
 **Progress File**:
@@ -1270,9 +1284,9 @@ Then relaunch execution
 ## References
 
 **Related files**:
-- [generate-doc-plan.prompt.md](generate-doc-plan.prompt.md) - Generates the plan
-- [.github/prompts.config](../.github/prompts.config) - Project configuration
-- [.github/instructions/prompt.instructions.md](../.github/instructions/prompt.instructions.md) - Standards
+- generate-doc-plan.prompt.md - Generates the plan
+- .github/prompts.config - Project configuration
+- .github/instructions/prompt.instructions.md - Standards
 
 **Documentation**:
 - Execution plan: `temp/plan.md`

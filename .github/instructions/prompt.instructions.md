@@ -29,7 +29,8 @@ Instructions for creating effective and maintainable prompt files that guide Git
 - Reference related prompts or instruction files using relative links to aid discoverability.
 
 ## Input and Context Handling
-- Use `${input:variableName[:placeholder]}` for required values and explain when the user must supply them. Provide defaults or alternatives where possible.
+- Prefer reading configuration from `.github/prompts.config` using uppercase keys (example: `OUTPUT_PATH`, `ENTRYPOINT`, `METADATA_FORMAT`) instead of requiring chat-time inputs.
+- When a prompt needs a value that may vary per repository, define a corresponding uppercase key in `.github/prompts.config` and document its default behaviour if missing.
 - Call out contextual variables such as `${selection}`, `${file}`, `${workspaceFolder}` only when they are essential, and describe how Copilot should interpret them.
 - Document how to proceed when mandatory context is missing (for example, “Request the file path and stop if it remains undefined”).
 

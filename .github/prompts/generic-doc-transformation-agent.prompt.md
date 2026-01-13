@@ -1,6 +1,6 @@
 ---
 description: 'Template for creating documentation transformation agents'
-usage: 'Customize the variables and use this prompt to create agent files for different projects'
+tools: ['read', 'edit', 'search']
 ---
 
 # Documentation Transformation Agent Generator (Plan-Based)
@@ -33,11 +33,17 @@ Read the execution plan from `temp/plan.json` and generate a specific, determini
    - Ensure all phases are defined
    - Confirm execution_order is sequential
 
-3. **Extract configuration from plan.config**:
+3. **Extract configuration from the plan `config` block**:
    - Project name, agent name, agent description
    - Source paths, output path
    - Language, tone, audience
    - Batch size, domains, special requirements
+
+4. **Extract documentation conventions** (from the plan section: `config` → `documentation_conventions`):
+   - docs_root, entrypoint
+   - metadata_format
+   - create_module_readmes
+   - prefer_short_docs + split_threshold_lines
 
 ### Step 1bis: Extract Logical Organization
 
@@ -61,7 +67,7 @@ Read the execution plan from `temp/plan.json` and generate a specific, determini
 
 ### Step 2: Extract Batch Specifications
 
-For each batch in `plan.batches`:
+For each batch in the plan `batches` list:
 1. Extract batch_id, domain, files list
 2. Get transformation_rules (extract_topics, heading_levels, etc.)
    - **IMPORTANT**: Also get output_path_strategy: PEDAGOGICAL_ORGANIZATION
@@ -75,7 +81,7 @@ For each batch in `plan.batches`:
 
 ### Step 3: Extract Phase Instructions
 
-For each phase in `plan.phases`:
+For each phase in the plan `phases` list:
 1. Extract phase_id, phase_name, phase_type (init/batch/crossref/summary/validation)
 2. Get all actions with descriptions and validations
 3. Get success_criteria (objective, measurable)
@@ -84,12 +90,12 @@ For each phase in `plan.phases`:
 
 ### Step 4: Generate Agent YAML Frontmatter
 
-Create frontmatter from plan.config:
+Create frontmatter from the plan `config` block:
 
 ```yaml
 ---
-description: '[From plan.config.agent_description]'
-name: '[From plan.config.agent_name with title case]'
+description: '[From plan config: agent_description]'
+name: '[From plan config: agent_name with title case]'
 tools: ['read', 'edit', 'search']
 target: vscode
 infer: false
@@ -124,14 +130,24 @@ Execute the documentation transformation plan to convert source transcripts into
 
 ## Plan Overview
 
-- **Project**: [From plan.config.project_name]
-- **Source paths**: [From plan.config.source_paths]
-- **Output**: [From plan.config.output_path]
-- **Language**: [From plan.config.language]
-- **Tone**: [From plan.config.tone]
+- **Project**: [From plan config: project_name]
+- **Source paths**: [From plan config: source_paths]
+- **Output**: [From plan config: output_path]
+- **Language**: [From plan config: language]
+- **Tone**: [From plan config: tone]
 - **Organization**: Pedagogical course structure (from plan.logical_organization)
-- **Batches**: [Count of plan.batches]
-- **Total phases**: [Count of plan.phases]
+- **Batches**: [Count of plan batches]
+- **Total phases**: [Count of plan phases]
+
+## Documentation Conventions (Source of Truth)
+
+These conventions come from the plan section: `config` → `documentation_conventions` and MUST be applied exactly:
+
+- **Docs root**: [docs_root]
+- **Entrypoint**: [entrypoint]
+- **Metadata format**: [metadata_format] (`yaml-frontmatter` | `bold-lines` | `both`)
+- **Per-module README generation**: [create_module_readmes]
+- **Prefer short docs**: [prefer_short_docs] (splitting only when plan specifies it)
 
 ## Course Structure
 
@@ -147,7 +163,7 @@ The documentation will be organized as:
 
 #### Section 2: Batch Instructions
 
-For EACH batch in `plan.batches`:
+For EACH batch in the plan `batches` list:
 
 ```markdown
 ## Batch [batch_id]: [domain]
@@ -163,10 +179,11 @@ For EACH batch in `plan.batches`:
 - Source: [source_path] → Output: [expected_output_path]
 
 **Transformation rules** (exact):
-- Extract topics: [from batch.transformation_rules.extract_topics]
+- Extract topics: [from batch transformation_rules: extract_topics]
 - Topics range: [min-max]
 - Heading levels: [min-max]
 - Required metadata: [list]
+- Metadata format: [from batch transformation_rules: metadata_format; fallback: plan documentation_conventions metadata_format]
 - Output organization: Pedagogical course structure
 - File naming: Descriptive, ordered with numeric prefixes
 - Folder structure: By learning modules, not source domains
@@ -180,7 +197,7 @@ For EACH batch in `plan.batches`:
 
 #### Section 3: Phase Instructions
 
-For EACH phase in `plan.phases`:
+For EACH phase in the plan `phases` list:
 
 ```markdown
 ## Phase [phase_number]: [phase_name]
@@ -202,7 +219,7 @@ For EACH phase in `plan.phases`:
 ```markdown
 ## Execution Order (Strict Sequential)
 
-[From plan.execution_order]
+[From plan execution_order]
 
 ## Important Notes
 
@@ -211,6 +228,9 @@ For EACH phase in `plan.phases`:
 - **File naming**: Use descriptive names with numeric prefixes (01_Core_Concepts.md), not source names
 - **Folder structure**: Organize by learning progression, not by source domains
 - **Output paths**: Use expected_output_path from each file in batches (these are the source of truth)
+- **Entrypoint naming**: Follow the plan's `documentation_conventions.entrypoint` (derived from `.github/prompts.config`, default should be SUMMARY.md in this repo)
+- **Metadata format**: Follow the plan's `documentation_conventions.metadata_format` (derived from `.github/prompts.config`)
+- **Per-module README.md**: If enabled in conventions, create module indexes using the plan `logical_organization` → `modules` list
 - All instructions from temp/plan.json
 - Deterministic and measurable
 - Strict sequential execution
@@ -232,10 +252,10 @@ For EACH phase in `plan.phases`:
 **Path**: `.github/agents/[AGENT_NAME].agent.md`
 
 **Content**:
-- YAML frontmatter from plan.config
-- All batch specifications from plan.batches
-- All phase instructions from plan.phases
-- Execution order from plan.execution_order
+- YAML frontmatter from the plan config
+- All batch specifications from the plan batches
+- All phase instructions from the plan phases
+- Execution order from the plan execution_order
 - Validation criteria from plan
 
 **Format**: Valid markdown, actionable instructions
