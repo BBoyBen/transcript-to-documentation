@@ -215,7 +215,7 @@ temp/plan.md
    - Scan all generated documentation
    - Create the single documentation entrypoint at `OUTPUT_PATH/ENTRYPOINT` (default: `OUTPUT_PATH/SUMMARY.md`)
    - Ensure `ENTRYPOINT` contains navigation + topic index + page index + source mapping (docs ↔ sources)
-   - Optionally create per-module `README.md` files if `CREATE_MODULE_READMES` is enabled
+   - If `CREATE_OVERVIEW_FILES` is enabled: ensure `OVERVIEW_FILE_NAME` (default: `overview.md`) exists for each folder node (domain/topic/subtopic) with folder-level metadata + links
    - Update progress file
 
 5. **Phase N+3: Final Validation**:
@@ -246,12 +246,14 @@ temp/plan.md
 # Example when OUTPUT_PATH=/docs and ENTRYPOINT=SUMMARY.md
 docs/
 ├── SUMMARY.md
-├── Module_1/
-│   ├── README.md
-│   ├── 01_Topic_A.md
+├── 1_Domain_1/
+│   ├── overview.md
+│   ├── 01_Topic_A/
+│   │   ├── overview.md
+│   │   └── 01_Topic_A.md
 │   └── 02_Topic_B.md
-└── Module_2/
-   ├── README.md
+└── 2_Domain_2/
+   ├── overview.md
    └── 01_Topic_C.md
 ```
 
@@ -304,12 +306,19 @@ This YAML file controls **the entire process**. Agents and prompts read it to ad
 ```yaml
 PROJECT_NAME: My Project
 SOURCE_PATHS:
-  - /transcripts/clean/domain1
-  - /transcripts/clean/domain2
+   - /transcripts/clean/1_Domain_1
+   - /transcripts/clean/2_Domain_2
 OUTPUT_PATH: /docs
+ENTRYPOINT: SUMMARY.md
+CREATE_OVERVIEW_FILES: true
+OVERVIEW_FILE_NAME: overview.md
 DOMAINS:
-  - Domain1
-  - Domain2
+   - name: Domain 1
+      path: 1_Domain_1
+      description: My domain 1
+   - name: Domain 2
+      path: 2_Domain_2
+      description: My domain 2
 BATCH_SIZE: 2-4
 LANGUAGE: English
 ```

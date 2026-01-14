@@ -28,16 +28,16 @@ This agent resolves the documentation entrypoints deterministically.
 
 1. **Resolve documentation conventions**:
     - If `.github/prompts.config` exists: read it and use:
-       - `docs_root` = `OUTPUT_PATH` (default: `docs`)
-       - `entrypoint` = `ENTRYPOINT` (default: `SUMMARY.md`)
+       - `OUTPUT_PATH` (default: `docs`)
+       - `ENTRYPOINT` (default: `SUMMARY.md`)
     - Else (fallback):
-       - `docs_root` = `docs`
-       - `entrypoint` = `SUMMARY.md`
+       - `OUTPUT_PATH` = `docs`
+       - `ENTRYPOINT` = `SUMMARY.md`
 
 2. **Select the start file** (strict fallback order):
    - Start with `OUTPUT_PATH/ENTRYPOINT` if it exists
    - Else fallback to `OUTPUT_PATH/SUMMARY.md` (compat)
-   - Else fallback to `OUTPUT_PATH/README.md` (legacy)
+   - Else: stop and state that the documentation entrypoint is missing
 
 3. **Default search scope (IMPORTANT)**:
    - By default, search ONLY inside `OUTPUT_PATH/`.
@@ -54,7 +54,7 @@ This agent resolves the documentation entrypoints deterministically.
 
 5. **Navigation**:
    - Follow links and metadata
-   - Use module-level README.md files when present
+   - Use folder-level `overview.md` files when present
    - Explore the logical folder structure
 
 6. **Metadata**:

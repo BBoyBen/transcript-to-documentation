@@ -94,13 +94,20 @@ Edit `.github/prompts.config` file with your project parameters:
 PROJECT_NAME: Your Project Name
 AGENT_NAME: create-docs
 SOURCE_PATHS:
-  - /transcripts/clean/domain1
-  - /transcripts/clean/domain2
+  - /transcripts/clean/1_Domain_1
+  - /transcripts/clean/2_Domain_2
 OUTPUT_PATH: /docs
+ENTRYPOINT: SUMMARY.md
+CREATE_OVERVIEW_FILES: true
+OVERVIEW_FILE_NAME: overview.md
 LANGUAGE: English
 DOMAINS:
-  - Domain1
-  - Domain2
+  - name: Domain 1
+    path: 1_Domain_1
+    description: My domain 1
+  - name: Domain 2
+    path: 2_Domain_2
+    description: My domain 2
 BATCH_SIZE: 2-4
 ```
 
@@ -230,7 +237,7 @@ Centralized YAML file containing:
 - **Structure**: Organized by domains and hierarchical sub-folders
 - **Format**: Markdown with metadata
 - **Role**: Documentation destination (defaults to `/docs/` when `OUTPUT_PATH: /docs`)
-- **Flexibility**: Agent automatically creates sub-folders as needed for optimal documentation hierarchy (not limited to domain folders, can create up to 4 nesting levels)
+- **Flexibility**: First folder level under `OUTPUT_PATH/` is always one folder per configured domain (`DOMAINS[].path`). Inside each domain, the agent can create topic/subtopic sub-folders (up to ~4 nesting levels total).
 
 #### `temp/`
 - **Contains**: Progress temporary files
@@ -366,9 +373,10 @@ transcripts/clean/
 - Structured markdown files with metadata
 - `OUTPUT_PATH/ENTRYPOINT` (default: `OUTPUT_PATH/SUMMARY.md`) as the single documentation entrypoint
 - Entry point includes pages (course order) with topics + description, plus A–Z indexes (pages + topics) and source mapping
+- Folder-level `overview.md` files (one per domain/topic/subtopic) when enabled by `CREATE_OVERVIEW_FILES`
 - All cross-references resolved
 - Validation report confirming completion
-- **Hierarchical structure**: Agent creates sub-folders as needed (up to 4 nesting levels) for optimal documentation organization beyond domain-level grouping
+- **Hierarchical structure**: Within each domain folder, the agent creates topic/subtopic sub-folders as needed (up to ~4 nesting levels total)
 
 ### Step 7: Query Documentation
 

@@ -33,10 +33,10 @@ These conventions MUST be read from `.github/prompts.config` (same format as the
 - `OUTPUT_PATH`: Documentation root folder.
 - `ENTRYPOINT` (default: `SUMMARY.md`): Single documentation entrypoint created under `OUTPUT_PATH`. This file MUST contain everything a search agent needs (navigation + topic index + source mapping).
 - `METADATA_FORMAT` (default: `both`): `yaml-frontmatter` | `bold-lines` | `both`.
-- `CREATE_MODULE_READMES` (default: `true`): `true` to create per-module `README.md` indexes.
+- `CREATE_OVERVIEW_FILES` (default: `true`): `true` to create an `overview.md` per folder node in the docs hierarchy.
+- `OVERVIEW_FILE_NAME` (default: `overview.md`): File name for folder-level overview documents.
 - `PREFER_SHORT_DOCS` (default: `true`): `true` to allow splitting long docs into smaller, retrieval-friendly docs.
 - `SPLIT_THRESHOLD_LINES` (default: `1000`): Line threshold for splitting (plan-time only).
-- `MODULE_README_NAME` (default: `README.md`): File name for per-module index files.
 
 ## Workflow
 
@@ -54,8 +54,8 @@ These conventions MUST be read from `.github/prompts.config` (same format as the
 3. Validate that all required parameters are present
 
 4. Derive documentation conventions deterministically:
-  - `docs_root` MUST be `OUTPUT_PATH` from `.github/prompts.config`
-  - `entrypoint`, `metadata_format`, `create_module_readmes`, `prefer_short_docs`, `split_threshold_lines`, `module_readme_name` come from `.github/prompts.config` (use defaults if missing)
+  - `output_path` MUST be `OUTPUT_PATH` from `.github/prompts.config`
+  - `entrypoint`, `metadata_format`, `create_overview_files`, `overview_file_name`, `prefer_short_docs`, `split_threshold_lines` come from `.github/prompts.config` (use defaults if missing)
 
 ### Step 2: Analysis of Source Files
 
@@ -69,9 +69,12 @@ These conventions MUST be read from `.github/prompts.config` (same format as the
 
 ### Step 3: Logical Course Organization (Structure Design)
 
-**Objective**: Design a coherent, pedagogical course structure independent of source file organization.
+**Objective**: Design a coherent, pedagogical course structure per domain.
 
-**CRITICAL**: Output structure should be organized as a progressive learning path, NOT as a mirror of source files.
+**CRITICAL**:
+- The FIRST folder level under `OUTPUT_PATH/` MUST be one folder per domain defined in `.github/prompts.config` → `DOMAINS`.
+- Each output document MUST live under exactly one domain folder (no cross-domain reorganization).
+- Within each domain folder, output structure should be organized as a progressive learning path (topics/subtopics), NOT as a mirror of source files.
 
 **Algorithm Steps**:
 
@@ -84,11 +87,12 @@ These conventions MUST be read from `.github/prompts.config` (same format as the
 2. **Design logical course structure**:
    - Identify natural progression (foundational → advanced)
    - Group related concepts from different sources
-   - Create logical course modules/sections
+  - Create logical topic/subtopic hierarchy within each domain
    - Define hierarchical organization (up to 4 nesting levels)
 
 3. **Create semantic file naming**:
-   - Generate descriptive folder names (not "Domain1", but "Module_Name")
+  - Domain folder name: MUST use the configured `DOMAINS[].path` (top-level under `OUTPUT_PATH/`)
+  - Below the domain folder: generate descriptive topic/subtopic folder names
    - Create meaningful file names reflecting content (not "doc1", but "01_Concept_Title")
    - Use prefixes for ordering: "01_", "02_", etc.
    - Ensure names are consistent with pedagogical structure
@@ -100,11 +104,15 @@ These conventions MUST be read from `.github/prompts.config` (same format as the
    - transcripts/clean/security/KT_2.md (mentions DNS security)
    - transcripts/clean/networking/KT_3.md (mentions DNS advanced)
    
-   ORGANIZED (by course logic):
-   - docs/01_Fundamentals/01_DNS_Basics.md (combined from KT_1 + relevant parts)
-   - docs/01_Fundamentals/02_Network_Protocols.md (from other KT parts)
-   - docs/02_Advanced_Topics/01_DNS_Security.md (from KT_2 + KT_3)
-   - docs/02_Advanced_Topics/02_Performance_Optimization.md (combined from various)
+  ORGANIZED (domain as top-level + course logic inside domain):
+  - OUTPUT_PATH/networking/overview.md
+  - OUTPUT_PATH/networking/01_Fundamentals/overview.md
+  - OUTPUT_PATH/networking/01_Fundamentals/01_DNS_Basics.md
+  - OUTPUT_PATH/networking/02_Advanced_Topics/overview.md
+  - OUTPUT_PATH/networking/02_Advanced_Topics/01_DNS_Security.md
+  - OUTPUT_PATH/security/overview.md
+  - OUTPUT_PATH/security/01_Fundamentals/overview.md
+  - OUTPUT_PATH/security/01_Fundamentals/01_DNS_Security_Basics.md
    ```
 
 **Output**: Logical organization mapping (source files → course structure)
@@ -160,7 +168,7 @@ These conventions MUST be read from `.github/prompts.config` (same format as the
 
 **Deterministic rule**:
 
-1. For each planned output document listed in the plan under `logical_organization` → `structure` → `sections` → `files`, compute `estimated_line_count` as the sum of line counts of its `source_files` (use exact source line counts).
+1. For each planned output document listed in the plan under `logical_organization` → `domains[]` → `topics[]` (and optional nested subtopics) → `files[]`, compute `estimated_line_count` as the sum of line counts of its `source_files` (use exact source line counts).
 2. If `estimated_line_count` > `split_threshold_lines` (default 1000): split into:
   - 1 overview file (keeps the original `output_file` name and ordering)
   - 2 to 6 sub-documents, created by grouping source content in a stable order
@@ -206,13 +214,12 @@ Create a structured JSON file with the following schema:
     "special_requirements": ["from config if present"],
     "additional_features": ["from config if present"],
     "documentation_conventions": {
-      "docs_root": "OUTPUT_PATH from .github/prompts.config",
       "entrypoint": "ENTRYPOINT from .github/prompts.config (default: SUMMARY.md)",
       "metadata_format": "METADATA_FORMAT from .github/prompts.config (default: both)",
-      "create_module_readmes": "CREATE_MODULE_READMES from .github/prompts.config (default: true)",
+      "create_overview_files": "CREATE_OVERVIEW_FILES from .github/prompts.config (default: true)",
+      "overview_file_name": "OVERVIEW_FILE_NAME from .github/prompts.config (default: overview.md)",
       "prefer_short_docs": "PREFER_SHORT_DOCS from .github/prompts.config (default: true)",
-      "split_threshold_lines": "SPLIT_THRESHOLD_LINES from .github/prompts.config (default: 1000)",
-      "module_readme_name": "MODULE_README_NAME from .github/prompts.config (default: README.md)"
+      "split_threshold_lines": "SPLIT_THRESHOLD_LINES from .github/prompts.config (default: 1000)"
     }
   },
   
@@ -231,24 +238,23 @@ Create a structured JSON file with the following schema:
   },
   
   "logical_organization": {
-    "description": "Pedagogical course structure (not mirror of source organization)",
-    "structure": [
+    "description": "Domain-first structure (top-level domains from config), with pedagogical organization inside each domain",
+    "domains": [
       {
-        "module_id": "MODULE_001",
-        "module_name": "Descriptive Module Name",
-        "folder_path": "docs/01_Module_Name",
-        "level": 1,
-        "description": "Module purpose and learning objectives",
-        "sections": [
+        "domain_name": "Domain 1",
+        "domain_path": "OUTPUT_PATH/<domain.path>",
+        "overview_path": "OUTPUT_PATH/<domain.path>/overview.md",
+        "description": "Domain purpose and scope",
+        "topics": [
           {
-            "section_id": "SECTION_001",
-            "section_name": "Section Name",
-            "folder_path": "docs/01_Module_Name/01_Section_Name",
+            "topic_name": "Topic Name",
+            "folder_path": "OUTPUT_PATH/<domain.path>/01_Topic_Name",
+            "overview_path": "OUTPUT_PATH/<domain.path>/01_Topic_Name/overview.md",
             "level": 2,
             "files": [
               {
                 "output_file": "01_Concept_Title.md",
-                "full_path": "docs/01_Module_Name/01_Section_Name/01_Concept_Title.md",
+                "full_path": "OUTPUT_PATH/<domain.path>/01_Topic_Name/01_Concept_Title.md",
                 "learning_objective": "What students should learn",
                 "source_files": ["transcripts/clean/.../file1.md", "transcripts/clean/.../file2.md"],
                 "ordering": 1
@@ -258,15 +264,10 @@ Create a structured JSON file with the following schema:
         ]
       }
     ],
-    "modules": [
-      {
-        "module_id": "MODULE_001",
-        "module_name": "Descriptive Module Name",
-        "folder_path": "docs/01_Module_Name",
-        "readme_path": "docs/01_Module_Name/README.md",
-        "description": "Module purpose and learning objectives"
-      }
-    ],
+    "folder_metadata_files": {
+      "overview_file_name": "overview.md",
+      "rule": "Create an overview.md for each folder that groups multiple documents and/or subfolders; overview.md contains folder-level metadata and links"
+    },
     "naming_rules": {
       "use_prefixes": "01_, 02_, 03_ for ordering",
       "use_descriptive_names": "Based on content, not source",
@@ -284,7 +285,7 @@ Create a structured JSON file with the following schema:
       "files": [
         {
           "source_path": "transcripts/clean/domain1/file1.md",
-          "expected_output_path": "docs/01_Module_Name/01_Section_Name/01_Concept_Title.md"
+          "expected_output_path": "OUTPUT_PATH/<domain.path>/01_Topic_Name/01_Concept_Title.md"
         }
       ],
       "transformation_rules": {
@@ -301,7 +302,7 @@ Create a structured JSON file with the following schema:
         "tone": "from config",
         "output_path_strategy": "PEDAGOGICAL_ORGANIZATION",
         "naming_convention": "Descriptive content-based names with numeric prefixes",
-        "folder_structure": "Organized by learning modules, not source domains",
+        "folder_structure": "Domain-first (top-level domain folder), then organized by topic/subtopic learning progression (not a mirror of source file paths)",
         "file_naming_examples": "01_Concept_Title.md, 02_Advanced_Topic.md"
       },
       "validation_criteria": [
@@ -570,12 +571,12 @@ docs/
   - Source mapping: each output document → its sources
   - A short "How to search" section for agents
   - Navigation guide
-4. If `CREATE_MODULE_READMES` is `true`: create a `MODULE_README_NAME` inside each module folder listed in the plan under `logical_organization` → `modules` (use each module's `folder_path`)
+4. If `CREATE_OVERVIEW_FILES` is `true`: ensure `OVERVIEW_FILE_NAME` exists for each folder node described in the plan under `logical_organization` (domain/topic/subtopic folders). These overview files contain folder-level metadata and links.
 5. Update progress file
 
 **Success Criteria**:
 - Entrypoint created with complete index
-- Module README.md files created when enabled
+- Folder overview.md files created when enabled
 - All documents listed and categorized
 - Progress updated with "SUMMARY_COMPLETE" status
 
@@ -840,7 +841,7 @@ Then execute the plan with:
 - Estimated time: ~[TIME] hours
 
 🎯 Next steps:
-1. Review plan: temp/plan.md
+1. Review plan: temp/plan.md (execution uses temp/plan.json)
 2. Generate agent: @[AGENT_NAME] /generate-agent-from-plan
 3. Execute plan: @[AGENT_NAME] /execute-doc-plan
 ```

@@ -1,5 +1,5 @@
 ---
-description: 'Executes sequentially all phases of the documentation plan from temp/plan.md'
+description: 'Executes sequentially all phases of the documentation plan from temp/plan.json'
 tools: ['read', 'edit', 'search']
 ---
 
@@ -35,7 +35,8 @@ Config variables (fallback only, from `.github/prompts.config`):
 - `OUTPUT_PATH`: Documentation root folder.
 - `ENTRYPOINT` (default: `SUMMARY.md`): Single entrypoint file under `OUTPUT_PATH` for both humans and agents.
 - `METADATA_FORMAT` (default: `both`): `yaml-frontmatter` | `bold-lines` | `both`.
-- `CREATE_MODULE_READMES` (default: `true`): If `true`, create per-module `README.md` files.
+- `CREATE_OVERVIEW_FILES` (default: `true`): If `true`, create `overview.md` files for folder nodes (domain/topic/subtopic).
+- `OVERVIEW_FILE_NAME` (default: `overview.md`): File name for folder-level overview documents.
 - `PREFER_SHORT_DOCS` (default: `true`): If `true`, allow splitting long docs when plan specifies it.
 
 ## Main Workflow
@@ -195,7 +196,7 @@ Execute summary generation (standard for all plans):
 
 1. **Scan all generated documents** in [OUTPUT_PATH]
 2. **Extract metadata** (format depends on conventions)
-3. **Create the entrypoint file** (FROM conventions `entrypoint`) under [OUTPUT_PATH] with:
+3. **Create the entrypoint file** (FROM conventions `ENTRYPOINT`) under [OUTPUT_PATH] with:
    - Project overview
    - Documentation structure
    - Pages list (course order): every document link + title + topics + one-line description
@@ -204,8 +205,16 @@ Execute summary generation (standard for all plans):
    - Index by page title (A–Z): page → link + topics
    - Source mapping: each output document → its sources
    - A short "How to search" section for agents
-4. If conventions `create_module_readmes` is true: create `README.md` in each module folder listed in the plan under `logical_organization` → `modules`
-5. **Success**: Entrypoint and optional module indexes created and indexed
+4. If conventions `create_overview_files` is true: create or update `OVERVIEW_FILE_NAME` (default `overview.md`) for each folder node present in the documentation hierarchy. Folder overview files must contain folder-level metadata and links to child overview/docs.
+5. **Validate** (must pass before completing the phase):
+   - Entrypoint exists at `OUTPUT_PATH/ENTRYPOINT` and is readable
+   - Every generated document is listed at least once (course order + A–Z)
+   - Topic index includes every topic found in docs
+   - Source mapping covers every generated document
+   - All links in the entrypoint are valid relative links
+6. **Success**: Entrypoint and folder overview files created and indexed
+
+**Template**: The entrypoint file content MUST follow the structure in **Appendix A: Entrypoint Template**.
 
 ---
 
@@ -231,6 +240,10 @@ Execute final validation (standard for all plans):
 
 4. **Success**: All checks pass
 
+5. **Generate validation report**:
+   - Create or update `temp/validation-report.md`
+   - Use **Appendix B: Validation Report Template**
+
 #### 1.3 Phase Completion
 
 1. **Update progress file**:
@@ -249,244 +262,7 @@ Execute final validation (standard for all plans):
    ```
 
 3. **Continue to next phase** in execution_order
-   
-   ---
-   
-   ## Pages (Course Order)
-   
-   List EVERY generated document in pedagogical order. For each entry, include:
-   - Link (relative)
-   - Title
-   - Topics (from the document metadata; keep topic order alphabetical)
-   - One-line description (first sentence or a short summary)
-   
-   ---
-   
-   ## Pages (A–Z)
-   
-   List EVERY generated document sorted alphabetically by title (or file name if no title). Each entry MUST include the document topics.
-   
-   ---
-   
-   ## Topic Index (A–Z)
-   
-   List EVERY unique topic sorted A–Z. For each topic, list all documents that contain that topic.
-   
-   ---
-   
-   ## Search Tips for AI Agents
-   
-   ### Recommended Search Strategies
-   
-   **By Domain**:
-   - Start with domain overview documents
-   - Navigate through Core Concepts → Advanced Topics → Reference
-   
-   **By Topic**:
-   - Use Complete Topic Index to find all related documents
-   - Check "Related to" for conceptually similar topics
-   
-   **By Relationship**:
-   - Use Document Relationships section to explore concept connections
-   - Follow prerequisites for foundational knowledge
-   - Follow next steps for advanced exploration
-   
-   ### Metadata Usage
-   
-   Every document includes:
-   - **Topics**: Keywords for semantic search
-   - **Related**: Direct links to connected documents
-   - **Source**: Original transcript file for traceability
-   
-   ### Search Keywords by Domain
-   
-   **Domain 1**: [list of main keywords/concepts]
-   **Domain 2**: [list of main keywords/concepts]
-   [etc.]
-   
-   ---
-   
-   ## Project Statistics
-   
-   ### Overview
-   - **Total documents**: [N]
-   - **Domains covered**: [N]
-   - **Unique topics**: [N]
-   - **Cross-references**: [N]
-   - **Source files processed**: [N]
-   
-   ### Documents by Domain
-   | Domain | Documents | Topics | Key Concepts |
-   |--------|-----------|--------|--------------|
-   | [Domain 1] | [N] | [N] | [list main concepts] |
-   | [Domain 2] | [N] | [N] | [list main concepts] |
-   
-   ### Most Referenced Topics
-   1. **[Topic 1]** - [N] documents
-   2. **[Topic 2]** - [N] documents
-   3. **[Topic 3]** - [N] documents
-   [Top 10 or all if less]
-   
-   ---
-   
-   ## Source File Mapping
-   
-   **Purpose**: Trace generated documentation back to original sources
-   
-   | Source File | Generated Document | Domain | Topics |
-   |-------------|-------------------|--------|--------|
-   | `/transcripts/clean/[path]/[file].md` | `[output].md` | [Domain] | [topics] |
-   [Complete mapping for all files]
-   
-   ---
-   
-   ## Documentation Standards
-   
-   All documents follow these standards:
-   - **Structure**: 2-4 heading levels maximum
-   - **Metadata**: Rendered per conventions `METADATA_FORMAT` (YAML frontmatter and/or bold lines)
-   - **Links**: Relative paths for portability
-   - **Language**: [LANGUAGE from config]
-   - **Optimization**: Structured for AI semantic search
-   
-   ---
-   
-   ## Generation Information
-   
-   - **Generated by**: @[AGENT_NAME]
-   - **Generation date**: [FULL DATE and TIME]
-   - **Configuration**: `.github/prompts.config`
-   - **Source transcripts**: `[SOURCE_PATHS]`
-   - **Output location**: `[OUTPUT_PATH]`
-   
-   ---
-   
-   *This summary is automatically maintained. For questions or updates, regenerate documentation.*
-   ```
-
-3. **Create optional entrypoint** in OUTPUT_PATH (if helpful for human navigation):
-   ```markdown
-   # [PROJECT_NAME]
-   
-   Welcome to the [PROJECT_NAME] documentation.
-   
-   ## Start Here
-   
-   - **New to the project?** → Start with [Core Concepts]
-   - **Looking for something specific?** → See the entrypoint index (`ENTRYPOINT`, expected `SUMMARY.md`)
-   - **Want to search?** → Use @search-doc agent
-   
-   ## Quick Links
-   
-      - Complete Documentation Index: `ENTRYPOINT` (expected `SUMMARY.md`)
-    - Domain 1 Overview: `domain1/overview.md`
-    - Domain 2 Overview: `domain2/overview.md`
-   
-   ## Using This Documentation
-   
-   ### For Humans
-   Navigate through modules/domains or use the topic index in `ENTRYPOINT`
-   
-   ### For AI Agents
-   Start with `ENTRYPOINT` (expected `SUMMARY.md`) for optimal search results
-   ```
-
-4. **Quality Checklist for the entrypoint index file (`ENTRYPOINT`, expected `SUMMARY.md`)**:
-   - [ ] All documents listed with full paths, descriptions, and topics
-   - [ ] Complete A–Z page index (title → link + topics)
-   - [ ] Complete alphabetical topic index with all topics
-   - [ ] Document relationships and concept maps included
-   - [ ] Search tips and metadata usage explained
-   - [ ] Source mapping complete
-   - [ ] Language matches config (LANGUAGE parameter)
-   - [ ] Optimized for AI semantic search
-   - [ ] No broken links or missing documents
-
-**For Phase N+3: Final Validation**
-
-1. **Verify complete structure**:
-   - All expected files exist
-   - Correct folder hierarchy
-   - Compliant file names
-   
-2. **Validate content quality**:
-   - All metadata present (Topics, Related, Source)
-   - No TBD markers remaining
-   - All links work and use correct relative paths
-   - Hierarchical structure respected (2-4 levels)
-   - Correct language per config (LANGUAGE parameter)
-   
-3. **Validate entrypoint index optimization**:
-   - [ ] Contains all required sections (Quick Navigation, By Domain, Pages, Topic Index, Relationships, Search Tips, Source mapping)
-   - [ ] All documents listed with descriptions and topics
-   - [ ] A–Z page index present
-   - [ ] Complete alphabetical topic index (A-Z)
-   - [ ] Document relationships and concept maps present
-   - [ ] Search strategies for AI agents included
-   - [ ] Metadata usage guide present
-   - [ ] Source file mapping complete
-   - [ ] Optimized for semantic search by AI agents
-   - [ ] Language consistent throughout
-   
-4. **Check special requirements**:
-   - Compare with SPECIAL_REQUIREMENTS from config
-   - Validate ADDITIONAL_FEATURES implemented
-   - Ensure AI search optimization throughout all documents
-   
-5. **Generate comprehensive validation report**:
-   ```markdown
-   # Validation Report - [PROJECT_NAME]
-   
-   Date: [DATE]
-   
-   ## Verification Results
-   
-   ✅ File structure: VALID
-   ✅ Metadata: COMPLETE
-   ✅ Cross-references: RESOLVED
-   ✅ Links: ALL VALID
-   ✅ Hierarchy: COMPLIANT
-   ✅ Language: CORRECT ([LANGUAGE])
-   ✅ Special requirements: MET
-   ✅ AI optimization: ACTIVE
-   
-   ### Summary.md Quality Check
-   
-   ✅ All required sections present
-   ✅ Complete topic index (A-Z)
-   ✅ Document relationships mapped
-   ✅ Search strategies documented
-   ✅ [N] documents indexed
-   ✅ [N] topics catalogued
-   ✅ [N] cross-references validated
-   ✅ Optimized for AI semantic search
-   
-   ## Final Statistics
-   - Documents created: [N]
-   - Source files processed: [N]
-   - Cross-references: [N]
-   - Topics covered: [N]
-   - Domains: [N]
-   
-   ## AI Search Readiness
-   
-   ✅ summary.md is comprehensive and well-structured
-   ✅ All documents have complete metadata
-   ✅ Topic index enables efficient semantic search
-   ✅ Document relationships enhance discoverability
-   ✅ Search strategies guide AI agents effectively
-   
-   ## Project Status
-   ✅ PROJECT COMPLETE
-   
-   Documentation is ready for:
-   - AI agent search (@search-doc)
-   - Human navigation
-   - Knowledge querying
-   - Team onboarding
-   ```
-
-#### 1.3 Phase Validation
+#### 1.4 Phase Validation
 
 **Objective**: Verify that phase execution met all success criteria and produced expected quality
 
@@ -627,7 +403,7 @@ Execute final validation (standard for all plans):
    - Warnings: [N]
    - Errors: [0]
 
-#### 1.4 Transition to Next Phase
+#### 1.5 Transition to Next Phase
 
 1. **Display overall progress** and immediately continue:
    ```
@@ -649,6 +425,161 @@ Execute final validation (standard for all plans):
 2. **Continue automatically** to next phase without pause
 
 ---
+
+## Appendices
+
+### Appendix A: Entrypoint Template (ENTRYPOINT)
+
+Create or update the single documentation entrypoint at `OUTPUT_PATH/ENTRYPOINT` (default: `OUTPUT_PATH/SUMMARY.md`). Do NOT create additional entrypoint files.
+
+```markdown
+# [PROJECT_NAME]
+
+## Start Here
+
+- Read this file top-to-bottom to discover the documentation.
+- For folder navigation, open each folder's `overview.md` (when enabled).
+
+---
+
+## Documentation Structure
+
+- Top-level folders under `OUTPUT_PATH/` are domains (`DOMAINS[].path`).
+- Inside each domain: topic/subtopic folders and documents.
+
+---
+
+## Pages (Course Order)
+
+List EVERY generated document in pedagogical order. For each entry, include:
+- Link (relative)
+- Title
+- Topics (from the document metadata; keep topic order alphabetical)
+- One-line description
+
+---
+
+## By Domain
+
+For each domain folder, list:
+- Link to the domain `overview.md` (if present)
+- All documents under that domain (can be grouped by topic/subtopic)
+
+---
+
+## Pages (A–Z)
+
+List EVERY generated document sorted A–Z by title (or file name if no title). Each entry MUST include the document topics.
+
+---
+
+## Topic Index (A–Z)
+
+List EVERY unique topic sorted A–Z. For each topic, list all documents that contain that topic.
+
+---
+
+## Search Tips for AI Agents
+
+### Recommended Search Strategies
+
+**By Domain**:
+- Start with the domain `overview.md`
+- Navigate overview → child overviews → documents
+
+**By Topic**:
+- Use the Topic Index (A–Z)
+- Use each page's `related` links
+
+**By Relationship**:
+- Follow prerequisites for foundational knowledge
+- Follow next steps for advanced exploration
+
+### Metadata Usage
+
+Every document includes:
+- **Topics**: keywords for semantic search
+- **Related**: direct links to connected documents
+- **Sources**: original transcript file paths for traceability
+
+---
+
+## Project Overview
+
+- **Total documents**: [N]
+- **Domains covered**: [N]
+- **Unique topics**: [N]
+- **Cross-references**: [N]
+- **Source files processed**: [N]
+
+---
+
+## Source File Mapping
+
+**Purpose**: Trace generated documentation back to original sources.
+
+| Source File | Generated Document | Domain | Topics |
+|-------------|-------------------|--------|--------|
+| `/transcripts/clean/[path]/[file].md` | `[output].md` | [Domain] | [topics] |
+
+---
+
+## Documentation Standards
+
+- **Structure**: 2-4 heading levels maximum
+- **Metadata**: per conventions `METADATA_FORMAT`
+- **Links**: relative paths for portability
+- **Language**: [LANGUAGE]
+
+---
+
+## Generation Information
+
+- **Generated by**: @[AGENT_NAME]
+- **Generation date**: [FULL DATE and TIME]
+- **Configuration**: `.github/prompts.config`
+- **Source transcripts**: `[SOURCE_PATHS]`
+- **Output location**: `[OUTPUT_PATH]`
+```
+
+### Appendix B: Validation Report Template
+
+Create `temp/validation-report.md` during the validation phase.
+
+```markdown
+# Validation Report - [PROJECT_NAME]
+
+Date: [DATE]
+
+## Verification Results
+
+✅ File structure: VALID
+✅ Metadata: COMPLETE
+✅ Cross-references: RESOLVED
+✅ Links: ALL VALID
+✅ Hierarchy: COMPLIANT
+✅ Language: CORRECT ([LANGUAGE])
+✅ Special requirements: MET
+✅ AI optimization: ACTIVE
+
+## Entrypoint Quality Check
+
+✅ `OUTPUT_PATH/ENTRYPOINT` exists and is comprehensive
+✅ Pages (course order) complete
+✅ Pages (A–Z) complete
+✅ Topic Index (A–Z) complete
+✅ Source mapping complete
+
+## Final Counts
+- Documents created: [N]
+- Source files processed: [N]
+- Cross-references: [N]
+- Topics covered: [N]
+- Domains: [N]
+
+## Project Status
+✅ PROJECT COMPLETE
+```
 
 ### Step 2: Finalization and Reporting
 
@@ -765,14 +696,15 @@ Execute final validation (standard for all plans):
    ### Metadata and Tracking Files
    
    - `.project-metadata.json`: Project configuration and generation metadata
-   - `temp/plan.md`: Original execution plan
+   - `temp/plan.json`: Original execution plan (machine-readable)
+   - `temp/plan.md`: Original execution plan (human-readable)
    - `temp/execution-report.md`: This file
    - `temp/progress.md`: Phase-by-phase progress tracking
    ```
 
-4. **Quality metrics and statistics**:
+4. **Project overview (counts)**:
    ```markdown
-   ## Project Statistics
+   ## Project Overview
    
    ### Input
    - Source files processed: [N]
@@ -1174,7 +1106,7 @@ In case of phase error:
 @create-docs
 /generate-doc-plan
 ```
-→ Creates `temp/plan.md` with 10 phases
+→ Creates `temp/plan.json` (execution) and `temp/plan.md` (review)
 
 **Step 2: Execute Plan**
 ```
@@ -1252,7 +1184,7 @@ Phase N+3 (Valid)  ← MUST wait for summary
 
 ### Limitations
 
-- Requires `temp/plan.md` to exist and be valid
+- Requires `temp/plan.json` to exist and be valid
 - Requires read access to source files
 - Requires write access to OUTPUT_PATH and temp/
 - Works only with plans generated by `generate-doc-plan.prompt.md`
@@ -1260,7 +1192,7 @@ Phase N+3 (Valid)  ← MUST wait for summary
 ## Maintenance
 
 This prompt must be updated if:
-- Format of `temp/plan.md` changes
+- Format of `temp/plan.json` changes
 - New phases are added
 - Progress file format evolves
 - Validation requirements change
@@ -1269,7 +1201,7 @@ This prompt must be updated if:
 
 ### Problem: Plan not found
 
-**Error**: `temp/plan.md` doesn't exist
+**Error**: `temp/plan.json` doesn't exist
 
 **Solution**:
 ```
@@ -1317,7 +1249,7 @@ Then relaunch execution
 - .github/instructions/prompt.instructions.md - Standards
 
 **Documentation**:
-- Execution plan: `temp/plan.md`
+- Execution plan: `temp/plan.json` (execution) and `temp/plan.md` (review)
 - Progress file: Per config (default: `temp/create-docs-progress.md`)
 
 ---

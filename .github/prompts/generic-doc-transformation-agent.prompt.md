@@ -40,14 +40,17 @@ Read the execution plan from `temp/plan.json` and generate a specific, determini
    - Batch size, domains, special requirements
 
 4. **Extract documentation conventions** (from the plan section: `config` → `documentation_conventions`):
-   - docs_root, entrypoint
+   - output_path, entrypoint
    - metadata_format
-   - create_module_readmes
+   - create_overview_files + overview_file_name
    - prefer_short_docs + split_threshold_lines
 
 ### Step 1bis: Extract Logical Organization
 
-**CRITICAL**: Agent must use the pedagogical structure from the plan, NOT mirror source files.
+**CRITICAL**:
+- The first folder level under `OUTPUT_PATH/` MUST be one folder per domain defined in `.github/prompts.config` → `DOMAINS`.
+- All generated files MUST remain under their domain folder.
+- Within a domain folder, use the pedagogical structure from the plan (topics/subtopics), NOT a mirror of source file paths.
 
 1. **Extract logical_organization from plan.json**:
    - Read the `logical_organization` section
@@ -55,10 +58,10 @@ Read the execution plan from `temp/plan.json` and generate a specific, determini
    - Note the naming conventions and rules
 
 2. **Understand output path strategy**:
-   - Files are organized by learning progression
+   - Files are organized by domain (top-level) then by learning progression inside the domain
    - Folder names are descriptive (e.g., "Foundational_Concepts")
    - File names are content-based and ordered (e.g., "01_Core_Topic.md")
-   - Output paths follow pedagogical logic, not source domain logic
+   - Output paths follow pedagogical logic within each domain
 
 3. **Extract output path mapping**:
    - For each file in batches: source_path → expected_output_path
@@ -77,7 +80,7 @@ For each batch in the plan `batches` list:
 4. **Map source_path → expected_output_path** (from logical_organization):
    - These paths are the SOURCE OF TRUTH for file locations
    - Follow the pedagogical structure, not source domains
-   - Example: `transcripts/clean/networking/KT_1.md` → `docs/01_Fundamentals/01_Core_Concepts.md`
+   - Example: `transcripts/clean/1_Domain_1/KT_1.md` → `OUTPUT_PATH/1_Domain_1/01_Topic/01_Core_Concepts.md`
 
 ### Step 3: Extract Phase Instructions
 
@@ -123,7 +126,7 @@ Execute the documentation transformation plan to convert source transcripts into
 
 **This agent generates documentation organized as a course, NOT as a mirror of source files.**
 
-- Source files from different KT/domains are **reorganized** into a logical learning structure
+- Source files are reorganized into a logical learning structure **within each domain** (no cross-domain reorganization)
 - Folder names are **descriptive** (e.g., "Foundational_Concepts") not source-based
 - File names are **content-based and ordered** (e.g., "01_Core_Principles.md")
 - Output paths follow the **logical_organization** defined in the plan
@@ -143,10 +146,10 @@ Execute the documentation transformation plan to convert source transcripts into
 
 These conventions come from the plan section: `config` → `documentation_conventions` and MUST be applied exactly:
 
-- **Docs root**: [docs_root]
+- **Output path**: [output_path]
 - **Entrypoint**: [entrypoint]
 - **Metadata format**: [metadata_format] (`yaml-frontmatter` | `bold-lines` | `both`)
-- **Per-module README generation**: [create_module_readmes]
+- **Folder overview files**: [create_overview_files] (`OVERVIEW_FILE_NAME`, default: `overview.md`)
 - **Prefer short docs**: [prefer_short_docs] (splitting only when plan specifies it)
 
 ## Course Structure
@@ -155,8 +158,8 @@ The documentation will be organized as:
 
 [From plan.logical_organization - show folder hierarchy]
 
-- Modules are organized by learning progression (foundational → advanced)
-- Each module contains logically related concepts
+- Domains are top-level (from config) and contain the pedagogical topic/subtopic progression
+- Each topic/subtopic folder contains an `overview.md` plus the documentation pages for that node
 - Files are named to reflect content and learning order
 - Structure is independent of source file organization
 ```
@@ -224,13 +227,15 @@ For EACH phase in the plan `phases` list:
 ## Important Notes
 
 - **Pedagogical Organization**: Generate documentation as a learning course, NOT as source mirrors
-- **Use logical_organization from plan**: Folders and files follow course structure from plan.logical_organization
+- **Use logical_organization from plan**: Folders and files follow the domain-first + topic/subtopic structure from plan.logical_organization
 - **File naming**: Use descriptive names with numeric prefixes (01_Core_Concepts.md), not source names
 - **Folder structure**: Organize by learning progression, not by source domains
 - **Output paths**: Use expected_output_path from each file in batches (these are the source of truth)
 - **Entrypoint naming**: Follow the plan's `documentation_conventions.entrypoint` (derived from `.github/prompts.config`, default should be SUMMARY.md in this repo)
 - **Metadata format**: Follow the plan's `documentation_conventions.metadata_format` (derived from `.github/prompts.config`)
-- **Per-module README.md**: If enabled in conventions, create module indexes using the plan `logical_organization` → `modules` list
+- **No README-per-folder**: Do not generate README.md files as folder metadata carriers.
+- **Folder overviews**: If enabled in conventions, ensure `overview.md` exists for each folder node (domain/topic/subtopic). Put folder-level metadata in `overview.md`.
+- **Document metadata**: Put document metadata directly in each documentation `.md` file (frontmatter and/or bold-lines depending on `metadata_format`).
 - All instructions from temp/plan.json
 - Deterministic and measurable
 - Strict sequential execution
