@@ -14,6 +14,15 @@ handoffs:
 
 # Documentation Planner Agent
 
+## Skills
+
+This agent uses the following on-demand skills. Load each one with the `read` tool at the step indicated.
+
+| Skill | Path | Load at |
+|-------|------|---------|
+| `doc-config-reading` | `.github/skills/doc-config-reading/SKILL.md` | Step 1 |
+| `doc-output-structure` | `.github/skills/doc-output-structure/SKILL.md` | Step 3 |
+
 ## Mission
 
 Design the most relevant documentation execution plan for the current repository context.
@@ -39,9 +48,8 @@ This agent replaces the legacy `generate-doc-plan.prompt.md` workflow. It must p
 
 ### Source of Truth
 
-- Configuration comes from `.github/prompts.config`.
+- Configuration comes from `.github/prompts.config` (see `doc-config-reading` skill for the complete key reference).
 - Domain boundaries come from `DOMAINS` when present.
-- Documentation conventions come from uppercase config keys such as `OUTPUT_PATH`, `ENTRYPOINT`, `METADATA_FORMAT`, `CREATE_OVERVIEW_FILES`, `OVERVIEW_FILE_NAME`, `PREFER_SHORT_DOCS`, and `SPLIT_THRESHOLD_LINES`.
 - The plan output must remain compatible with the current schema expectations used across this repository.
 
 ### Adaptability
@@ -79,34 +87,7 @@ If a problem is non-blocking, document the assumption in both plan files and con
 
 ### Step 1: Validate Configuration
 
-Read `.github/prompts.config` and extract at minimum:
-
-- `PROJECT_NAME`
-- `AGENT_NAME`
-- `AGENT_DESCRIPTION`
-- `SOURCE_PATHS`
-- `OUTPUT_PATH`
-- `LANGUAGE`
-- `TONE`
-- `AUDIENCE`
-- `BATCH_SIZE`
-- `PROGRESS_FILE`
-- `DOMAINS`
-- `SPECIAL_REQUIREMENTS`
-- `ADDITIONAL_FEATURES`
-- `ENTRYPOINT`
-- `METADATA_FORMAT`
-- `CREATE_OVERVIEW_FILES`
-- `OVERVIEW_FILE_NAME`
-- `PREFER_SHORT_DOCS`
-- `SPLIT_THRESHOLD_LINES`
-
-Normalize obvious config issues before planning:
-
-- **`BATCH_SIZE` resolution**: If the value is a range (e.g., `2-4`), resolve to the midpoint rounded down as the effective target batch size (e.g., `2-4` → 3). If the value cannot be parsed as a number or range, default to 3. Record the resolved value in `temp/plan.json` under `config.effective_batch_size`.
-- **`SPECIAL_REQUIREMENTS`**: Treat each item as a non-negotiable hard constraint. Incorporate them as planning rules that every batch and phase must satisfy. Propagate them into `temp/plan.json` under `config.constraints`.
-- **`ADDITIONAL_FEATURES`**: Treat each item as a best-effort capability to activate. Include them in the execution instructions for the relevant phases (e.g., "Source traceability" → ensure `Source` metadata on every page; "Summary index generation" → plan for full A-Z index at entrypoint).
-- If optional conventions are absent, apply repository defaults explicitly.
+Load `.github/skills/doc-config-reading/SKILL.md` and use its complete key reference and normalization rules to read and normalize all keys from `.github/prompts.config`. Record all resolved values (including `config.effective_batch_size`) before planning.
 
 ### Step 2: Analyze Source Material
 
@@ -125,17 +106,9 @@ Do not mirror source paths blindly. Build a documentation structure optimized fo
 
 ### Step 3: Design Logical Organization
 
-The first folder level under `OUTPUT_PATH` must remain one folder per configured domain.
+Load `.github/skills/doc-output-structure/SKILL.md` and apply its naming convention, domain mapping rules, depth rules, and overview file requirements to design the folder hierarchy.
 
-Inside each domain:
-
-- organize by topic and subtopic progression
-- keep hierarchy shallow and discoverable
-- use descriptive, ordered names
-- plan `overview.md` files when `CREATE_OVERVIEW_FILES` is enabled
-- ensure the entrypoint at `OUTPUT_PATH/ENTRYPOINT` can index the result cleanly
-
-When a source file spans multiple concepts, allow the plan to route its content into multiple output documents if traceability stays explicit.
+The first folder level under `OUTPUT_PATH` must be one folder per configured domain. When a source file spans multiple concepts, allow the plan to route its content into multiple output documents if traceability stays explicit.
 
 ### Step 4: Build Execution Batches
 

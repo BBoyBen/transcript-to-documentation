@@ -14,6 +14,17 @@ handoffs:
 
 # Documentation Plan Executor Agent
 
+## Skills
+
+This agent uses the following on-demand skills. Load each one with the `read` tool at the step indicated.
+
+| Skill | Path | Load at |
+|-------|------|---------|
+| `doc-config-reading` | `.github/skills/doc-config-reading/SKILL.md` | Step 1 |
+| `doc-output-structure` | `.github/skills/doc-output-structure/SKILL.md` | Step 2 |
+| `doc-metadata-format` | `.github/skills/doc-metadata-format/SKILL.md` | Step 3 |
+| `doc-entrypoint-template` | `.github/skills/doc-entrypoint-template/SKILL.md` | Step 5 |
+
 ## Mission
 
 Execute the documentation plan in `temp/plan.json` and generate the final documentation under `OUTPUT_PATH`.
@@ -43,15 +54,7 @@ Secondary reference:
 
 - `temp/plan.md`
 
-When these inputs disagree, use this priority:
-
-1. actual source files and repository state
-2. `.github/prompts.config`
-3. `temp/plan.json`
-4. `temp/plan.md`
-
-If the disagreement is minor and safely correctable, continue and record the correction.
-If the disagreement is structural or risky, stop and request a planning update.
+When these inputs disagree, apply the source-of-truth priority from the `doc-config-reading` skill. Minor discrepancies → continue and record. Structural discrepancies → stop and request a planning update.
 
 ## Execution Principles
 
@@ -93,6 +96,8 @@ Stop and ask for intervention when:
 
 ### Step 1: Load and Validate Inputs
 
+Load `.github/skills/doc-config-reading/SKILL.md` and apply its key reference, defaults, normalization rules, and source-of-truth priority.
+
 Before writing anything:
 
 1. Read `temp/plan.json`.
@@ -114,6 +119,8 @@ If the plan is absent, stale, or structurally weak, say so clearly and hand cont
 
 ### Step 2: Initialize the Run
 
+Load `.github/skills/doc-output-structure/SKILL.md` and apply its layout, naming convention, and path validity rules to create the output scaffolding.
+
 Create or update the run scaffolding:
 
 - `PROGRESS_FILE`
@@ -124,6 +131,8 @@ Create or update the run scaffolding:
 Mark the active phase and record timestamps and created artifacts as execution advances.
 
 ### Step 3: Process Batches
+
+Load `.github/skills/doc-metadata-format/SKILL.md` and apply its schema, rendering rules, and validation checklist to every generated page.
 
 For each batch in execution order:
 
@@ -156,17 +165,9 @@ After all batches:
 
 ### Step 5: Build Navigation Artifacts
 
-Generate the repository's documentation navigation layer:
+Load `.github/skills/doc-entrypoint-template/SKILL.md` and follow its required sections, full template, and validation checklist to generate the entrypoint and folder overview files.
 
-- `OUTPUT_PATH/ENTRYPOINT`
-- folder-level `OVERVIEW_FILE_NAME` files when enabled
-- pages in pedagogical order
-- A-Z page index
-- A-Z topic index
-- source-to-document mapping
-- search guidance for agents
-
-The entrypoint must be useful to both humans and `search-doc`.
+Generate the repository's documentation navigation layer following the required sections, full template, and validation checklist from the skill. The entrypoint must be useful to both humans and `search-doc`.
 
 ### Step 6: Validate Final Output
 
@@ -219,8 +220,7 @@ Every generated documentation file must aim for:
 - useful related links
 - diagrams when text alone is weaker
 
-When `METADATA_FORMAT` is `both`, include both YAML frontmatter and bold metadata lines.
-When `CREATE_OVERVIEW_FILES` is `true`, ensure every planned folder node has its own overview file.
+For metadata rendering rules and overview file requirements, apply the `doc-metadata-format` and `doc-output-structure` skills respectively.
 
 ## Output Expectations
 

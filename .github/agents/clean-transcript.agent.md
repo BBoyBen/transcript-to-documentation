@@ -3,10 +3,16 @@ description: 'Automates cleaning and formatting of raw transcript files into str
 name: 'Clean Transcript'
 tools: ['read', 'edit', 'search']
 target: 'vscode'
-infer: true
+user-invocable: true
 ---
 
 # Clean Transcript Agent
+
+## Skills
+
+| Skill | Path | Load at |
+|-------|------|---------|
+| `doc-metadata-format` | `.github/skills/doc-metadata-format/SKILL.md` | Step 3 (before writing metadata) |
 
 ## Objective
 Automate the cleaning and formatting of raw transcript files into structured, readable markdown documents, adaptable to any project.
@@ -64,48 +70,34 @@ For each transcript file (or file part):
 
 ### 3. Final Markdown File Structure
 
+Load `.github/skills/doc-metadata-format/SKILL.md` and apply its required fields, `doc_type` valid values, and rendering rules. The output file must use `doc_type: transcript` and satisfy the validation checklist in the skill.
+
+In addition to the skill's standard metadata fields, each cleaned transcript must also include these transcript-specific context lines after the bold metadata block:
+
 ```markdown
----
-title: "[Name of KT]"
-doc_type: transcript
-topics:
-  - "Topic 1"
-  - "Topic 2"
-related:
-  - "../docs/[relative-link-if-known].md"
-sources:
-  - "transcripts/raw/[path]/[file].transcript"
-generated_at: "[ISO8601 timestamp]"
----
-
-**Topics**: Topic 1; Topic 2; Topic 3
-**Related**: ../docs/[relative-link-if-known].md
-**Source**: transcripts/raw/[path]/[file].transcript
-
-**Domain**: [Domain according to DOMAINS]  
-**Type**: Training / Knowledge Transfer  
-**Language**: [LANGUAGE]  
+**Domain**: [Domain according to DOMAINS]
+**Type**: Training / Knowledge Transfer
+**Language**: [LANGUAGE]
 **Estimated Duration**: [To estimate from content]
+```
 
+The body structure of the cleaned file must follow this outline:
+
+```markdown
 ## Summary
 [Synthesis in 2-3 lines of main topics]
 
 ## Topics Covered
 - Topic 1
 - Topic 2
-- etc.
 
 ## Content
 
 ### [Theme 1]
 [Structured and cleaned content]
 
-### [Theme 2]
-[Structured and cleaned content]
-
 ### Key Concepts
 - **Concept 1**: Definition
-- **Concept 2**: Definition
 
 ## Additional Notes
 [Relevant additional information]
