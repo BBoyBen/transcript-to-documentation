@@ -219,7 +219,8 @@ Create a structured JSON file with the following schema:
       "create_overview_files": "CREATE_OVERVIEW_FILES from .github/prompts.config (default: true)",
       "overview_file_name": "OVERVIEW_FILE_NAME from .github/prompts.config (default: overview.md)",
       "prefer_short_docs": "PREFER_SHORT_DOCS from .github/prompts.config (default: true)",
-      "split_threshold_lines": "SPLIT_THRESHOLD_LINES from .github/prompts.config (default: 1000)"
+      "split_threshold_lines": "SPLIT_THRESHOLD_LINES from .github/prompts.config (default: 1000)",
+      "use_mermaid_diagrams": "true — always add Mermaid diagrams (flowchart, sequenceDiagram, classDiagram, erDiagram, stateDiagram-v2…) wherever they clarify structure, flow, or relationships; never omit them to keep docs short"
     }
   },
   
@@ -298,6 +299,8 @@ Create a structured JSON file with the following schema:
         "yaml_frontmatter_fields": ["title", "topics", "related", "sources", "generated_at", "doc_type"],
         "bold_line_fields": ["Topics", "Related", "Source"],
         "cross_ref_marker": "TBD",
+        "use_mermaid_diagrams": true,
+        "mermaid_diagram_types": ["flowchart", "sequenceDiagram", "classDiagram", "erDiagram", "stateDiagram-v2"],
         "language": "from config",
         "tone": "from config",
         "output_path_strategy": "PEDAGOGICAL_ORGANIZATION",

@@ -187,6 +187,7 @@ For EACH batch in the plan `batches` list:
 - Heading levels: [min-max]
 - Required metadata: [list]
 - Metadata format: [from batch transformation_rules: metadata_format; fallback: plan documentation_conventions metadata_format]
+- Mermaid diagrams: **required** — add `mermaid` diagrams proactively for any process, flow, architecture, class model, or interaction sequence; use `flowchart`, `sequenceDiagram`, `classDiagram`, `erDiagram`, or `stateDiagram-v2` as appropriate
 - Output organization: Pedagogical course structure
 - File naming: Descriptive, ordered with numeric prefixes
 - Folder structure: By learning modules, not source domains

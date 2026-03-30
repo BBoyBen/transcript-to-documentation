@@ -13,7 +13,8 @@ The following markdown content rules are enforced in the validators:
 4. **Links**: Use proper markdown syntax for links. Ensure that links are valid and accessible.
 5. **Images**: Use proper markdown syntax for images. Include alt text for accessibility.
 6. **Tables**: Use markdown tables for tabular data. Ensure proper formatting and alignment.
-7. **Line Length**: Limit line length to 400 characters for readability.
+7. **Mermaid Diagrams**: Use fenced `mermaid` code blocks to add diagrams whenever they clarify structure, flow, or relationships. Prefer diagrams over long prose for processes, architectures, and class/sequence interactions. Supported diagram types: `flowchart`, `sequenceDiagram`, `classDiagram`, `erDiagram`, `stateDiagram-v2`, `gantt`, `mindmap`.
+8. **Line Length**: Limit line length to 400 characters for readability.
 8. **Whitespace**: Use appropriate whitespace to separate sections and improve readability.
 9. **Front Matter**: Include YAML front matter at the beginning of the file with required metadata fields.
 
@@ -27,6 +28,7 @@ Follow these guidelines for formatting and structuring your markdown content:
 - **Links**: Use `[link text](URL)` for links. Ensure that the link text is descriptive and the URL is valid.
 - **Images**: Use `![alt text](image URL)` for images. Include a brief description of the image in the alt text.
 - **Tables**: Use `|` to create tables. Ensure that columns are properly aligned and headers are included.
+- **Mermaid Diagrams**: Embed diagrams using fenced `mermaid` code blocks. Use them proactively to illustrate processes (`flowchart`), interactions (`sequenceDiagram`), data models (`classDiagram`, `erDiagram`), or state machines (`stateDiagram-v2`). A well-placed diagram replaces several paragraphs of explanation.
 - **Line Length**: Break lines at 80 characters to improve readability. Use soft line breaks for long paragraphs.
 - **Whitespace**: Use blank lines to separate sections and improve readability. Avoid excessive whitespace.
 

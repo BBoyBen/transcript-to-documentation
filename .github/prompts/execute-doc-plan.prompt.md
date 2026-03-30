@@ -155,6 +155,7 @@ Execute all actions from the corresponding batch phase in the plan:
      - If `bold-lines`: include bold lines `**Topics**: ...`, `**Related**: ...`, `**Source**: ...`
      - If `both`: include YAML frontmatter AND the bold lines (retro compatibility)
    - **Structure**: Use heading levels [min]-[max] only
+   - **Mermaid diagrams**: Add `mermaid` fenced code blocks proactively whenever source content describes a process, flow, architecture, class/data model, or sequence of interactions. Choose the most descriptive type: `flowchart` (processes/workflows), `sequenceDiagram` (interactions between components), `classDiagram` (data models / object hierarchies), `erDiagram` (entity relationships), `stateDiagram-v2` (states and transitions). Never skip a diagram to keep the document shorter — diagrams are first-class documentation.
    - **Cross-references**: Mark references with [cross_ref_marker]
    - **Language**: Apply [language] from the plan config
    - **Tone**: Apply [tone] from the plan config
