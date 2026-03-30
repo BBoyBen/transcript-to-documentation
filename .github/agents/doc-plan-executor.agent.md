@@ -101,6 +101,15 @@ Before writing anything:
 4. Verify access to all required source files.
 5. Identify whether a prior progress file already exists and whether the run is fresh, resumed, or partial.
 
+**Resumption procedure** — when a prior `PROGRESS_FILE` is found:
+   1. Read `PROGRESS_FILE` to determine the last completed phase and batch.
+   2. Read `temp/execution-report.md` to understand any deviations already recorded.
+   3. Scan `OUTPUT_PATH` to reconcile declared vs. actual artifacts on disk.
+   4. Mark any batch whose output files are missing as `incomplete` even if the progress file claims it complete.
+   5. Resume from the earliest incomplete batch or phase — do not re-execute verified batches unless the source or plan has changed.
+   6. Append to existing `PROGRESS_FILE` and `temp/execution-report.md`; never overwrite history.
+   7. If the plan (`temp/plan.json`) has been modified since the last run (check `plan_version` and `generated_at`), treat the run as fresh and ask the user whether to continue from checkpoint or restart entirely.
+
 If the plan is absent, stale, or structurally weak, say so clearly and hand control back to the planner rather than improvising a full rewrite during execution.
 
 ### Step 2: Initialize the Run
@@ -121,7 +130,9 @@ For each batch in execution order:
 1. Read all source files assigned to the batch.
 2. Transform them into structured documentation using the planned target paths.
 3. Ensure each generated page includes the metadata required by `METADATA_FORMAT` and by the plan.
-4. Keep output inside the correct domain folder.
+4. Enforce every item in `SPECIAL_REQUIREMENTS` as a non-negotiable constraint on each page (language, hierarchy depth, metadata presence, etc.).
+5. Activate every item in `ADDITIONAL_FEATURES` at the appropriate phase (e.g., source traceability → `Source` field on every page; cross-document references → TBD markers resolved in Step 4; summary index generation → ensured in Step 5).
+6. Keep output inside the correct domain folder.
 5. Use clear headings and strong retrieval cues.
 6. Add Mermaid diagrams proactively when the content describes:
    - workflows

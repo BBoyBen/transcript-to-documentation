@@ -92,21 +92,23 @@ OUTPUT (clean):
 
 ### Phase 3: Validation (Manual)
 
-**Objective**: Ensure cleaned transcripts are correct
+**Objective**: Ensure cleaned transcripts are correct before planning
+
+**Automated Gate**: Run `validate-transcripts.prompt.md` for a structural and metadata check of all files in `SOURCE_PATHS`. This prompt is read-only and produces a pass/fail report — do not proceed to Phase 4 until all files are ✅ Ready or ⚠️ Needs Revision (minor issues only).
 
 **Actions**:
-- Examine files in `/transcripts/clean/`
-- Verify content completeness
-- Verify markdown structure
-- Verify presence of metadata
+- Run `@validate-transcripts` on all `SOURCE_PATHS`
+- Review the validation report
+- Re-run `@clean-transcript` on blocked files or fix issues manually
 - Correct if necessary (re-run clean-transcript if needed)
 
 **Acceptance Criteria**:
 - ✅ Correct and complete content
 - ✅ Logical and coherent structure
-- ✅ Metadata present
+- ✅ `Topics`, `Source`, and optional `Related` metadata present
 - ✅ Valid markdown formatting
-- ✅ No file corruption
+- ✅ No raw transcript artifacts (speaker labels, timestamps, `[inaudible]`)
+- ✅ No placeholder text (`TODO`, `FIXME`, `[...]`)
 
 ---
 
@@ -120,15 +122,11 @@ OUTPUT (clean):
 - Source files in `/transcripts/clean/`
 - Configuration from `prompts.config`
 
-**Prompt Actions**:
+**Agent Actions**:
 1. Read configuration from `.github/prompts.config`
 2. Scan and analyze all source files
-3. Create intelligent batch grouping (2-4 files per batch)
-**Agent Actions**:
-5. Generate deterministic execution order
-
 3. Create the most relevant domain-first documentation structure for the current context
-4. Create explicit batch grouping for execution
+4. Create explicit batch grouping (2-4 files per batch) for execution
 5. Record assumptions, risks, and rationale
 6. Generate deterministic execution order
 
@@ -227,7 +225,8 @@ temp/plan.md
 - ✅ Complete error handling
 - ✅ No intermediate generated documentation agent required
 
----
+**Output structure example**:
+```
 # Example when OUTPUT_PATH=/docs and ENTRYPOINT=SUMMARY.md
 docs/
 ├── SUMMARY.md
@@ -244,7 +243,7 @@ docs/
 
 ---
 
-### Phase 7: Querying (`search-doc` agent)
+### Phase 6: Querying (`search-doc` agent)
 
 **Objective**: Enable search and querying of documentation
 

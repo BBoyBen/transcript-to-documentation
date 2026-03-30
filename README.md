@@ -424,13 +424,11 @@ OUTPUT_PATH: /docs
 # STRUCTURE AND DOMAINS
 # ========================================
 DOMAINS:
-  - Domain_1
+  - name: Domain 1
     path: 1_Domain_1
-    file_count: X
     description: My awesome domain 1
-  - Domain_2
+  - name: Domain 2
     path: 2_Domain_2
-    file_count: X
     description: My awesome domain 2
 
 LANGUAGE: English
@@ -460,9 +458,12 @@ OUTPUT_PATH: /documentation  # Instead of /docs
 **To add new domains**:
 ```yaml
 DOMAINS:
-  - Domain1
-  - Domain2
-  - NewDomain
+  - name: Domain 1
+    path: 1_Domain_1
+  - name: Domain 2
+    path: 2_Domain_2
+  - name: New Domain
+    path: 3_NewDomain
 ```
 
 **To change language**:

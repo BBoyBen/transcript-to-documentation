@@ -103,7 +103,9 @@ Read `.github/prompts.config` and extract at minimum:
 
 Normalize obvious config issues before planning:
 
-- If `BATCH_SIZE` is a range such as `2-4 files per batch`, derive a deterministic effective target batch size for planning and record that derivation.
+- **`BATCH_SIZE` resolution**: If the value is a range (e.g., `2-4`), resolve to the midpoint rounded down as the effective target batch size (e.g., `2-4` → 3). If the value cannot be parsed as a number or range, default to 3. Record the resolved value in `temp/plan.json` under `config.effective_batch_size`.
+- **`SPECIAL_REQUIREMENTS`**: Treat each item as a non-negotiable hard constraint. Incorporate them as planning rules that every batch and phase must satisfy. Propagate them into `temp/plan.json` under `config.constraints`.
+- **`ADDITIONAL_FEATURES`**: Treat each item as a best-effort capability to activate. Include them in the execution instructions for the relevant phases (e.g., "Source traceability" → ensure `Source` metadata on every page; "Summary index generation" → plan for full A-Z index at entrypoint).
 - If optional conventions are absent, apply repository defaults explicitly.
 
 ### Step 2: Analyze Source Material
