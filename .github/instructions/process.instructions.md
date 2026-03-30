@@ -367,29 +367,35 @@ To confirm that each phase is completed:
 
 ## 🎓 Summary for Agents
 
+All agents load their domain-specific knowledge on-demand from `.github/skills/`. Each skill listed below is loaded at the step indicated — agents must not rely on inline copies of rules that belong to a skill.
+
 ### For `clean-transcript`:
 - **Role**: Transform raw → structured
 - **Input**: `/transcripts/raw/`
 - **Output**: `/transcripts/clean/`
 - **Phase**: 2
+- **Skills**: `doc-metadata-format` (Step 3)
 
 ### For `doc-planner`:
 - **Role**: Generate execution plan
 - **Input**: `/transcripts/clean/` + `prompts.config`
 - **Output**: `temp/plan.json` + `temp/plan.md`
 - **Phase**: 4
+- **Skills**: `doc-config-reading` (Step 1), `doc-output-structure` (Step 3)
 
 ### For `doc-plan-executor`:
 - **Role**: Generate documentation
 - **Input**: `temp/plan.json` + `/transcripts/clean/`
 - **Output**: `OUTPUT_PATH/`
 - **Phase**: 5
+- **Skills**: `doc-config-reading` (Step 1), `doc-output-structure` (Step 2), `doc-metadata-format` (Step 3), `doc-entrypoint-template` (Step 5)
 
 ### For `search-doc`:
 - **Role**: Query documentation
 - **Input**: `OUTPUT_PATH/` and `OUTPUT_PATH/ENTRYPOINT`
 - **Output**: Structured responses
 - **Phase**: 6
+- **Skills**: `doc-entrypoint-template` (Step 2)
 
 ---
 
@@ -400,6 +406,7 @@ To confirm that each phase is completed:
 - **Execution prompts**: `NN-name.prompt.md` (numbered, .prompt.md format)
 - **Final documentation**: `.md` (markdown with metadata)
 - **Configuration**: `prompts.config` (YAML)
+- **Skills**: `.github/skills/[skill-name]/SKILL.md` — loaded on-demand by agents; never auto-injected into context
 
 ---
 

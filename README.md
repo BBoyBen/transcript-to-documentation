@@ -77,6 +77,11 @@ Ensure following files exist in your project:
 │   ├── markdown.instructions.md                ← Markdown standards
 │   ├── process.instructions.md                 ← Global process
 │   └── prompt.instructions.md                  ← Prompt standards
+├── skills/
+│   ├── doc-config-reading/SKILL.md             ← Config keys, defaults, normalization
+│   ├── doc-metadata-format/SKILL.md            ← Metadata schema and rendering rules
+│   ├── doc-output-structure/SKILL.md           ← Folder naming, depth, overview rules
+│   └── doc-entrypoint-template/SKILL.md        ← SUMMARY.md template and structure
 └── prompts.config                              ← Central configuration
 
 transcripts/
@@ -217,6 +222,22 @@ Standards for `.prompt.md` files:
 - Best practices
 - Validation
 
+### Skills (`.github/skills/`)
+
+On-demand knowledge packages loaded by agents when needed. Unlike instructions (always in context), skills are loaded explicitly at a specific step — reducing context size and keeping domain knowledge reusable across agents.
+
+#### `doc-config-reading/SKILL.md`
+Canonical reference for reading `.github/prompts.config`: complete key table with types, defaults, and required flags; normalization rules (`BATCH_SIZE` range resolution, boolean parsing, missing key handling); source-of-truth priority. Used by: `doc-planner`, `doc-plan-executor`.
+
+#### `doc-metadata-format/SKILL.md`
+Schema and rendering rules for metadata in all pipeline-generated files: required fields (`topics`, `sources`, `generated_at`, `doc_type`), the 6 valid `doc_type` values, rendering per `METADATA_FORMAT` mode, and a validation checklist. Used by: `doc-planner`, `doc-plan-executor`, `clean-transcript`.
+
+#### `doc-output-structure/SKILL.md`
+Naming convention (`NN_Name`), domain mapping rules, depth limits (4 levels max), overview file requirements, and source-to-output mapping rules. Used by: `doc-planner`, `doc-plan-executor`.
+
+#### `doc-entrypoint-template/SKILL.md`
+Canonical template for `OUTPUT_PATH/ENTRYPOINT` (`SUMMARY.md`): the 11 required sections in order, a full annotated template, a folder `overview.md` template, and a validation checklist. Also documents how `search-doc` uses the entrypoint for navigation. Used by: `doc-plan-executor`, `search-doc`.
+
 ### Configuration (`.github/prompts.config`)
 
 Centralized YAML file containing:
@@ -307,7 +328,13 @@ Process the transcript "/transcripts/raw/KT_1.transcript"
 
 ### Step 3: Verify Cleaned Transcripts
 
-**Action**: Examine files in `/transcripts/clean/`
+**Action**: Run the validation prompt, then examine files in `/transcripts/clean/`
+
+**Automated gate** — run `@validate-transcripts` to check all files in `SOURCE_PATHS` for metadata completeness, structure, and transcript artifacts before proceeding:
+```
+@validate-transcripts
+```
+This prompt is read-only and produces a pass/fail report. Proceed to Step 4 only when all files are ✅ Ready or ⚠️ Needs Revision (minor issues).
 
 ```
 transcripts/clean/
