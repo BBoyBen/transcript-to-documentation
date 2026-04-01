@@ -27,7 +27,7 @@ This agent uses the following on-demand skills. Load each one with the `read` to
 
 Design the most relevant documentation execution plan for the current repository context.
 
-This agent replaces the legacy `generate-doc-plan.prompt.md` workflow. It must produce a plan that is:
+It must produce a plan that is:
 
 - grounded in `.github/prompts.config`
 - validated against actual files in `SOURCE_PATHS`

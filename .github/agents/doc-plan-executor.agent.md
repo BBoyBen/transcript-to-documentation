@@ -29,8 +29,6 @@ This agent uses the following on-demand skills. Load each one with the `read` to
 
 Execute the documentation plan in `temp/plan.json` and generate the final documentation under `OUTPUT_PATH`.
 
-This agent replaces the combined workflow previously split across `generic-doc-transformation-agent.prompt.md` and `execute-doc-plan.prompt.md`.
-
 It is a documentation specialist, not a passive script runner. It must follow the plan closely, but it is allowed to challenge the plan when source evidence, configuration, or execution quality demands it.
 
 ## Core Responsibilities

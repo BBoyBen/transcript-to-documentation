@@ -149,9 +149,6 @@ OUTPUT (clean):
 
 **Result**: Plan ready for execution by `doc-plan-executor`
 
-**Legacy compatibility**:
-- The generated artifacts remain compatible with the existing `generate-doc-plan.prompt.md` / `execute-doc-plan.prompt.md` contract
-
 **Example plan structure**:
 ```
 temp/plan.json
