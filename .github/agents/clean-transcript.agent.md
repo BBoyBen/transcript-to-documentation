@@ -1,7 +1,7 @@
 ---
 description: 'Automates cleaning and formatting of raw transcript files into structured markdown documents for knowledge base integration'
 name: 'Clean Transcript'
-tools: ['read', 'edit', 'search']
+tools: ['read', 'edit', 'search', 'execute', 'agent']
 target: 'vscode'
 user-invocable: true
 ---
@@ -13,6 +13,7 @@ user-invocable: true
 | Skill | Path | Load at |
 |-------|------|---------|
 | `doc-metadata-format` | `.github/skills/doc-metadata-format/SKILL.md` | Step 3 (before writing metadata) |
+| `video-screenshot` | `.github/skills/video-screenshot/SKILL.md` | Step 4 (after structuring, before finalizing output) |
 
 ## Objective
 Automate the cleaning and formatting of raw transcript files into structured, readable markdown documents, adaptable to any project.
@@ -116,9 +117,18 @@ The body structure of the cleaned file must follow this outline:
 2. Analyze and segment by themes
 3. Apply cleaning
 4. Structure into markdown
-5. Determine output folder based on source hierarchy
-6. Create `/transcripts/clean/[relative-path]/` folder if it doesn't exist
-7. Save `.md` file with same name as transcript
+5. **Visual enrichment** (load `.github/skills/video-screenshot/SKILL.md`):
+   - Scan the structured content for timecodes (pattern: `\[?\d{1,2}:\d{2}(:\d{2})?\]?`)
+   - For each unique timecode found:
+     1. Run `extract-frame.ps1` to produce the screenshot in `temp/`
+     2. Invoke `#runSubagent describe-screenshot` with the screenshot path, timecode, and the surrounding transcript sentence as context
+     3. Read back `temp/screenshot_<name>_<timecode_safe>.description.md` to retrieve the description
+     4. Insert the `> **[Visual — HH:MM:SS]** ...` callout block into the content
+     5. Delete the temporary screenshot and `.description.md` files from `temp/`
+   - If FFmpeg or the video is unavailable, or the description file is missing, log a warning and continue without annotation
+6. Determine output folder based on source hierarchy
+7. Create `/transcripts/clean/[relative-path]/` folder if it doesn't exist
+8. Save `.md` file with same name as transcript
 
 **Example with configuration**:
 ```yaml
@@ -137,6 +147,7 @@ SOURCE_PATHS:
 - [ ] Check that no information was lost (just reorganized)
 - [ ] Ensure folder hierarchy is respected
 - [ ] Confirm that all domains from `DOMAINS` are covered
+- [ ] Visual annotations present where timecodes exist and the corresponding video was available
 
 ## Execution Commands
 
@@ -162,6 +173,7 @@ Process all transcripts
 ✓ Consistent file names
 ✓ Well-formatted markdown
 ✓ No information loss
+✓ Visual annotations added where video and timecodes are available
 ✓ **Reusability**: Content structured for knowledge base integration
 ✓ **Consistency**: Uniform terminology within project
 ✓ **Traceability**: Source identifiability for each document

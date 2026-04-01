@@ -9,15 +9,15 @@ This document describes the overall process for transforming **raw transcripts**
 ## 🔄 Overall Workflow
 
 ```
-Raw Transcripts → Cleaned Transcripts → Documentation → Search/Querying
+Raw Transcripts → Cleaned Transcripts (+ Visual Annotations) → Documentation → Search/Querying
 ```
 
 ### Phases
 
 | Phase | Input | Agent/Tool | Output | Description |
 |-------|--------|-------------|--------|-------------|
-| **1. Preparation** | Raw recordings | Manual | `/transcripts/raw/` | Place raw transcripts |
-| **2. Cleaning** | `/transcripts/raw/` | `clean-transcript` | `/transcripts/clean/` | Transform into structured markdown |
+| **1. Preparation** | Raw recordings | Manual | `/transcripts/raw/` + `/videos/` | Place raw transcripts and KT videos |
+| **2. Cleaning** | `/transcripts/raw/` + `/videos/` | `clean-transcript` | `/transcripts/clean/` | Transform into structured markdown, enrich with visual annotations |
 | **3. Validation** | `/transcripts/clean/` | Manual | ✓ Approved | Verify quality and completeness |
 | **4. Plan Generation** | `/transcripts/clean/` + config | `doc-planner` | `temp/plan.json` + `temp/plan.md` | Generate the execution plan |
 | **5. Docs Creation** | `temp/plan.json` + config | `doc-plan-executor` | `OUTPUT_PATH/` | Execute the plan and generate documentation |
@@ -29,16 +29,17 @@ Raw Transcripts → Cleaned Transcripts → Documentation → Search/Querying
 
 ### Phase 1: Preparation (Manual)
 
-**Objective**: Collect raw transcripts
+**Objective**: Collect raw transcripts and KT video recordings
 
-**Input**: Recordings, transcriptions (`.transcript` files)
+**Input**: Recordings, transcriptions (`.transcript` files), video files
 
 **Actions**:
-- Place files in `/transcripts/raw/`
+- Place transcript files in `/transcripts/raw/`
+- Place video recordings in `/videos/` using the **same folder structure and base name** as the transcripts
 - Organize by domains if necessary
 - Format: Plain text or slightly formatted
 
-**Output**: `.transcript` files in `/transcripts/raw/`
+**Output**: `.transcript` files in `/transcripts/raw/`, video files in `/videos/`
 
 **Example**:
 ```
@@ -46,17 +47,24 @@ transcripts/raw/
 ├── KT_1.transcript
 ├── KT_2.transcript
 └── KT_3.transcript
+
+videos/
+├── KT_1.mp4
+├── KT_2.mp4
+└── KT_3.mp4
 ```
+
+> **Note**: Videos are optional. If a video is absent, the cleaning phase still runs successfully but without visual annotations.
 
 ---
 
 ### Phase 2: Cleaning (`clean-transcript` agent)
 
-**Objective**: Transform raw transcripts into structured markdown
+**Objective**: Transform raw transcripts into structured markdown with optional visual context
 
 **Agent**: `clean-transcript.agent.md`
 
-**Input**: Raw `.transcript` files
+**Input**: Raw `.transcript` files + corresponding video files in `/videos/`
 
 **Agent Actions**:
 1. Read raw file
@@ -64,7 +72,12 @@ transcripts/raw/
 3. Add missing information
 4. Structure into markdown sections
 5. Apply formatting standards
-6. Add metadata (Topics, Related, Source)
+6. **Visual enrichment** (via `video-screenshot` skill — requires FFmpeg):
+   - Detect timecodes in the structured content
+   - Extract a screenshot from the matching video at each timecode
+   - Describe screen content using vision analysis
+   - Insert `> **[Visual — HH:MM:SS]** ...` callout blocks into the transcript
+7. Add metadata (Topics, Related, Source)
 
 **Output**: Structured `.md` files
 
